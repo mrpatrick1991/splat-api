@@ -8,7 +8,7 @@ import subprocess
 import tempfile
 import time
 import json
-import requests 
+import requests
 
 logging.basicConfig(level=logging.INFO)
 app = FastAPI()
@@ -40,7 +40,7 @@ class PredictRequest(BaseModel):
         1000.0, ge=1, description="Model maximum range in meters (>= 1 m)"
     )
     signal_threshold: float = Field(
-        -100, le=0, description="Signal strength cutoff in dBm (<= 0)"
+        -100, le=0, description="Signal cutoff in dBm (<= 0)"
     )
     clutter_height: float = Field(
         0, ge=0, description="Ground clutter height in meters (>= 0)"
@@ -139,7 +139,7 @@ def area(request: PredictRequest):
                     "-N",
                     "-kml",
                     "-d",
-                    "/data/sdf/", # REPLACE ME
+                    "/data/sdf/",  # REPLACE ME
                     "-o",
                     "output.ppm",
                 ],
