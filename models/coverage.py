@@ -71,3 +71,14 @@ class CoveragePredictRequest(BaseModel):
         "vertical",
         description="Signal polarization, 'horizontal' or 'vertical' (default: 'vertical')",
     )
+
+    situation_fraction: Optional[float] = Field(
+        90,
+        gt=1, le=100,
+        description="Fraction of situations (e.g. 90% of locations) in percentage (default: 90)",
+    )
+
+    time_fraction: Optional[float] = Field(50,
+        gt=1, le=100,
+        description="Fraction of time (e.g. 50% of time) in percentage (default: 50)",
+    )
