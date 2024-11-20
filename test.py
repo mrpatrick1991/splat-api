@@ -8,8 +8,9 @@ def main():
 
     # Create a test CoveragePredictRequest object
     test_request = CoveragePredictRequest(
-        lat=51.7749,  # Example latitude
-        lon=114.4194,  # Example longitude
+        lat=51.08663463601878,  # Example latitude
+        #lon=-114.12966646059624,  # Example longitude
+        lon=7.374244414365673,
         tx_power=20.0,  # Example transmitter power in dBm
         tx_height=2.0,  # Example transmitter height above ground in meters
         rxh=1.0,  # Example receiver height above ground in meters
@@ -25,6 +26,9 @@ def main():
         system_loss=0.0,  # Example system loss in dB
         radio_climate="continental_temperate",  # Example radio climate
         polarization="vertical",  # Example signal polarization
+        situation_fraction=90,
+        time_Fraction=90,
+        blur_sigma=0.0
     )
 
     # Set the tile directory (ensure this path is valid in your environment)
@@ -33,10 +37,14 @@ def main():
     # Call the coverage function
     try:
         result = coverage(test_request, tile_dir)
-        with open("out.ppm","wb") as f:
+        with open("/Users/patrick/out.ppm","wb") as f:
             f.write(result["ppm_file"])
-            f.close()
 
+        with open("/Users/patrick/out.tiff","wb") as f:
+            f.write(result["geotiff_file"])
+
+        print("splat! stdout:")
+        print(result["stdout"])
 
     except Exception as e:
         logging.error(f"Error while running coverage: {e}")

@@ -1,9 +1,12 @@
 from pydantic import BaseModel, Field
 from typing import Optional, Literal
+import matplotlib.cm as cm
+
+AVAILABLE_COLORMAPS = list(cm.cmaps_listed.keys())
 
 class CoveragePredictRequest(BaseModel):
     """
-    Input payload for /area, including optional model parameters.
+    Input payload for /coverage, model parameters.
     """
 
     lat: float = Field(
@@ -11,7 +14,7 @@ class CoveragePredictRequest(BaseModel):
     )
     lon: float = Field(
         ge=-180,
-        le=180, 
+        le=180,
         description="Transmitter longitude in degrees (-180 to 180)",
     )
     tx_power: float = Field(ge=1, description="Transmitter power in dBm (>= 1 dBm)")
@@ -52,33 +55,53 @@ class CoveragePredictRequest(BaseModel):
         0.0, ge=0, description="System loss in dB (default: 0.0)"
     )
 
-    radio_climate: Optional[
-        Literal[
-            "equatorial",
-            "continental_subtropical",
-            "maritime_subtropical",
-            "desert",
-            "continental_temperate",
-            "maritime_temperate_land",
-            "maritime_temperate_sea",
-        ]
+    radio_climate: Literal[
+        "equatorial",
+        "continental_subtropical",
+        "maritime_subtropical",
+        "desert",
+        "continental_temperate",
+        "maritime_temperate_land",
+        "maritime_temperate_sea",
     ] = Field(
         "continental_temperate",
         description="Radio climate, e.g., 'equatorial', 'continental_temperate' (default: 'continental_temperate')",
     )
 
-    polarization: Optional[Literal["horizontal", "vertical"]] = Field(
+    polarization: Literal["horizontal", "vertical"] = Field(
         "vertical",
         description="Signal polarization, 'horizontal' or 'vertical' (default: 'vertical')",
     )
 
     situation_fraction: Optional[float] = Field(
-        90,
-        gt=1, le=100,
-        description="Fraction of situations (e.g. 90% of locations) in percentage (default: 90)",
+        50,
+        gt=1,
+        le=100,
+        description="Percentage of locations within the modeled area where the signal prediction is expected to be valid (default 50).",
     )
 
-    time_fraction: Optional[float] = Field(50,
-        gt=1, le=100,
-        description="Fraction of time (e.g. 50% of time) in percentage (default: 50)",
+    time_fraction: Optional[float] = Field(
+        90,
+        gt=1,
+        le=100,
+        description="Percentage of times where the signal prediction is expected to be valid (default 90).",
+    )
+
+    colormap: Literal[tuple(AVAILABLE_COLORMAPS)] = Field(
+        "rainbow",
+        description=f"Matplotlib colormap to use. Available options: {', '.join(AVAILABLE_COLORMAPS)}"
+    )
+
+    min_dbm: float = Field(
+        -130.0,
+        description="Minimum dBm value for the colormap (default: -130.0)."
+    )
+    max_dbm: float = Field(
+        -30.0,
+        description="Maximum dBm value for the colormap (default: -30.0)."
+    )
+
+    blur_sigma: float = Field(
+        0.5,
+        description="Standard deviation of optional gaussian blur applied to the output GeoTiff (default: 0.5)."
     )
