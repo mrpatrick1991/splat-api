@@ -1,0 +1,32 @@
+# SPLAT! Coverage Prediction Configuration
+# This file contains parameters for running a coverage prediction with SPLAT!.
+# Modify the values as needed and save the file as `config.yaml`.
+
+lat: 51.0    # Transmitter latitude in degrees (-90 to 90)
+lon: -114.0  # Transmitter longitude in degrees (-180 to 180)
+tx_height: 1.0  # Transmitter height above ground level in meters (>= 1)
+
+ground_dielectric: 15.0  # Earth's dielectric constant (default: 15.0)
+ground_conductivity: 0.005  # Earth's conductivity in S/m (default: 0.005)
+atmosphere_bending: 301.0  # Atmospheric bending constant in N-units (default: 301.0)
+
+frequency_mhz: 905.0  # Operating frequency in MHz (20-30000 MHz)
+radio_climate: continental_temperate  # Radio climate (options: equatorial, continental_subtropical, etc.)
+polarization: vertical  # Signal polarization (options: horizontal, vertical)
+
+situation_fraction: 90.0  # Percentage of valid locations in the modeled area (default: 50)
+time_fraction: 90.0  # Percentage of valid times for predictions (default: 90)
+
+tx_power: 20.0  # Transmitter power in dBm (>= 1 dBm)
+tx_gain: 2.0  # Transmitter antenna gain in dB (>= 0)
+system_loss: 2.0  # System loss in dB (e.g., cable loss)
+
+rxh: 1.0  # Receiver height above ground level in meters (>= 1)
+radius: 50000.0  # Coverage radius in meters (>= 1)
+signal_threshold: -135.0  # Receiver sensitivity threshold in dBm (<= 0)
+
+colormap: jet  # Matplotlib colormap to use (options: magma, inferno, plasma, etc.)
+min_dbm: -135.0  # Minimum dBm value for the colormap (default: -130.0)
+max_dbm: -90.0  # Maximum dBm value for the colormap (default: -90.0)
+
+blur_sigma: 0  # Standard deviation for optional Gaussian blur (default: 0)
