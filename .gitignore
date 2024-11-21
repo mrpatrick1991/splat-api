@@ -5,3 +5,8 @@ __pycache__/
 .idea/
 *.tiff
 *.pyc
+log.txt
+*.log
+splat/build/
+splat/utils/postdownload
+splat

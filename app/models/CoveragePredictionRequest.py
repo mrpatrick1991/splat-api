@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 AVAILABLE_COLORMAPS = plt.colormaps()
 
 
-class CoveragePredictRequest(BaseModel):
+class CoveragePredictionRequest(BaseModel):
     """
     Input payload for /coverage.
     """
