@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 
 AVAILABLE_COLORMAPS = plt.colormaps()
 
+
 class CoveragePredictRequest(BaseModel):
     """
     Input payload for /coverage.
@@ -19,12 +20,8 @@ class CoveragePredictRequest(BaseModel):
     tx_height: float = Field(
         1, ge=1, description="Transmitter height above ground in meters (>= 1 m)"
     )
-    tx_power: float = Field(
-        ge=1, description="Transmitter power in dBm (>= 1 dBm)"
-    )
-    tx_gain: float = Field(
-        1, ge=0, description="Transmitter antenna gain in dB (>= 0)"
-    )
+    tx_power: float = Field(ge=1, description="Transmitter power in dBm (>= 1 dBm)")
+    tx_gain: float = Field(1, ge=0, description="Transmitter antenna gain in dB (>= 0)")
     frequency_mhz: float = Field(
         905.0, ge=20, le=30000, description="Operating frequency in MHz (20-30000 MHz)"
     )
@@ -33,9 +30,7 @@ class CoveragePredictRequest(BaseModel):
     rxh: float = Field(
         1, ge=1, description="Receiver height above ground in meters (>= 1 m)"
     )
-    rx_gain: float = Field(
-        1, ge=0, description="Receiver antenna gain in dB (>= 0)"
-    )
+    rx_gain: float = Field(1, ge=0, description="Receiver antenna gain in dB (>= 0)")
     signal_threshold: float = Field(
         -100, le=0, description="Signal cutoff in dBm (<= 0)"
     )
@@ -104,8 +99,4 @@ class CoveragePredictRequest(BaseModel):
     max_dbm: float = Field(
         -30.0,
         description="Maximum dBm value for the colormap (default: -30.0).",
-    )
-    blur_sigma: float = Field(
-        0.5,
-        description="Standard deviation of optional gaussian blur applied to the output GeoTiff (default: 0.5).",
     )

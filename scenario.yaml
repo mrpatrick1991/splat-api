@@ -28,5 +28,3 @@ signal_threshold: -135.0  # Receiver sensitivity threshold in dBm (<= 0)
 colormap: jet  # Matplotlib colormap to use (options: magma, inferno, plasma, etc.)
 min_dbm: -135.0  # Minimum dBm value for the colormap (default: -130.0)
 max_dbm: -90.0  # Maximum dBm value for the colormap (default: -90.0)
-
-blur_sigma: 0  # Standard deviation for optional Gaussian blur (default: 0)
