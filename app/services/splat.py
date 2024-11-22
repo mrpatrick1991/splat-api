@@ -457,7 +457,7 @@ if __name__ == "__main__":
             system_loss=2.0,
             rxh=1.0,
             radius=25000.0,
-            colormap="rainbow",
+            colormap="jet",
             min_dbm=-130.0,
             max_dbm=-90.0,
             signal_threshold=-130.0
