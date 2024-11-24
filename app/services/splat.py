@@ -1,7 +1,5 @@
 import os
-import subprocess
 import tempfile
-import logging
 from typing import Literal
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,25 +10,145 @@ from PIL import Image
 
 from app.models.CoveragePredictionRequest import CoveragePredictionRequest
 
+import logging
+import math
+import boto3
+from botocore import UNSIGNED
+from botocore.config import Config
+import gzip
+import shutil
+import subprocess
+from typing import List
+
+
 logger = logging.getLogger(__name__)
 
-
 class Splat:
-    def __init__(self, splat_path: str, tile_dir: str):
+    def __init__(self, splat_path: str):
         """
         Initialize the SPLAT! service.
 
         Args:
-            splat_path (str): Path to the SPLAT! binary.
-            tile_dir (str): Directory containing .sdf terrain tiles.
+            splat_path (str): Path to the SPLAT! binary and srtm2sdf utility.
         """
         if not os.path.isfile(splat_path):
             raise FileNotFoundError(f"SPLAT! binary not found at '{splat_path}'")
-        if not os.path.isdir(tile_dir):
-            raise FileNotFoundError(f"Tile directory not found at '{tile_dir}'")
 
         self.splat_path = splat_path
-        self.tile_dir = tile_dir
+
+    def _required_srtm_tiles(self, lat, lon, radius):
+        """
+        Determine the set of SRTM terrain tiles needed to cover a given area.
+
+        Args:
+            lat (float): Latitude of the center point in degrees.
+            lon (float): Longitude of the center point in degrees.
+            radius (float): Radius in meters.
+
+        Returns:
+            list: List of SRTM tile filenames required to cover the area.
+        """
+        earth_radius = 6378137
+
+        # Convert radius to angular distance in degrees
+        delta_deg = (radius / earth_radius) * (180 / math.pi)
+
+        # Compute bounding box in degrees
+        lat_min = lat - delta_deg
+        lat_max = lat + delta_deg
+        lon_min = lon - delta_deg / math.cos(math.radians(lat))
+        lon_max = lon + delta_deg / math.cos(math.radians(lat))
+
+        # Determine the tile boundaries (rounded to 1-degree tiles)
+        lat_min_tile = math.floor(lat_min)
+        lat_max_tile = math.floor(lat_max)
+        lon_min_tile = math.floor(lon_min)
+        lon_max_tile = math.floor(lon_max)
+
+        # all tile names within the bounding box
+        tiles = []
+        for lat_tile in range(lat_min_tile, lat_max_tile + 1):
+            for lon_tile in range(lon_min_tile, lon_max_tile + 1):
+                ns = "N" if lat_tile >= 0 else "S"
+                ew = "E" if lon_tile >= 0 else "W"
+                tile_name = f"{ns}{abs(lat_tile):02d}{ew}{abs(lon_tile):03d}.hgt.gz"
+                tiles.append(tile_name)
+
+        return tiles
+
+    def _download_srtm_tiles(self, path: str, tile_names: List[str]):
+        """
+        Download, decompress, and convert SRTM tiles to .sdf format.
+
+        Args:
+            path (str): Directory to save the final .sdf files.
+            tile_names (List[str]): List of SRTM tile names to fetch (e.g., ['N50W115.hgt.gz']).
+
+        Returns:
+            None
+
+        Raises:
+            RuntimeError: If any tile cannot be downloaded, decompressed, or converted.
+        """
+        # Ensure the output directory exists
+        os.makedirs(path, exist_ok=True)
+        logger.debug(f"Ensured tile directory exists at {path}")
+
+        # Initialize S3 client with anonymous access
+        # Suppress logs for boto3 and its dependencies
+        logging.getLogger("boto3").setLevel(logging.WARNING)
+        logging.getLogger("botocore").setLevel(logging.WARNING)
+        logging.getLogger("s3transfer").setLevel(logging.WARNING)
+        logging.getLogger("urllib3").setLevel(logging.WARNING)
+        s3 = boto3.client("s3", config=Config(signature_version=UNSIGNED))
+        bucket_name = "elevation-tiles-prod"
+        bucket_prefix = "v2/skadi"
+
+        for tile_name in tile_names:
+            compressed_path = os.path.join(path, tile_name)  # e.g., N50W115.hgt.gz
+            decompressed_path = compressed_path.replace(".gz", "")  # e.g., N50W115.hgt
+
+            # Download the tile
+            try:
+                tile_dir_prefix = tile_name[:3]  # e.g., "N50"
+                s3_key = f"{bucket_prefix}/{tile_dir_prefix}/{tile_name}"
+                logger.info(f"Downloading {tile_name} from {bucket_name}/{s3_key}...")
+                s3.download_file(bucket_name, s3_key, compressed_path)
+                logger.debug(f"Downloaded {tile_name} to {compressed_path}")
+            except Exception as e:
+                logger.error(f"Failed to download {tile_name}: {e}")
+                raise RuntimeError(f"Failed to download {tile_name}: {e}")
+
+            # Decompress the .gz file
+            try:
+                logger.info(f"Decompressing {compressed_path}...")
+                with gzip.open(compressed_path, 'rb') as f_in:
+                    with open(decompressed_path, 'wb') as f_out:
+                        shutil.copyfileobj(f_in, f_out)
+                        logger.debug(f"Decompressed {tile_name} to {decompressed_path}")
+            except Exception as e:
+                logger.error(f"Failed to decompress {compressed_path}: {e}")
+                raise RuntimeError(f"Failed to decompress {compressed_path}: {e}")
+
+            # Convert the decompressed .hgt file to .sdf using srtm2sdf
+            try:
+                logger.info(f"Converting {decompressed_path} to .sdf using srtm2sdf...")
+                subprocess.run(["srtm2sdf-hd","-d", "/dev/null", decompressed_path], check=True, cwd=path)
+                logger.debug(f"Conversion completed for {tile_name}")
+            except subprocess.CalledProcessError as e:
+                logger.error(f"Failed to convert {decompressed_path} to .sdf: {e}")
+                raise RuntimeError(f"Failed to convert {decompressed_path} to .sdf: {e}")
+
+            # Cleanup intermediate files
+            try:
+                os.remove(compressed_path)
+                os.remove(decompressed_path)
+                logger.debug(f"Cleaned up temporary files for {tile_name}")
+            except Exception as e:
+                logger.warning(f"Failed to clean up temporary files for {tile_name}: {e}")
+                raise RuntimeError(f"Failed to clean up temporary files for {tile_name}: {e}")
+
+        logger.info("All required SRTM tiles have been downloaded and processed successfully.")
 
     def coverage_prediction(self, request: CoveragePredictionRequest) -> bytes:
         """
@@ -50,6 +168,11 @@ class Splat:
         with tempfile.TemporaryDirectory() as tmpdir:
             try:
                 logger.debug(f"Temporary directory created: {tmpdir}")
+
+                required_tiles = self._required_srtm_tiles(request.lat, request.lon, request.radius)
+                logger.info(f"Required tiles: {required_tiles}")
+                self._download_srtm_tiles(tmpdir, required_tiles)
+                logger.debug(f"Contents of {tmpdir}: {os.listdir(tmpdir)}")
 
                 # Create required input files
                 qth_path = self._create_qth(
@@ -108,7 +231,7 @@ class Splat:
                     str(request.signal_threshold),
                     "-kml",
                     "-d",
-                    self.tile_dir,
+                    tmpdir
                 ]
                 logger.debug(f"Executing SPLAT! command: {' '.join(command)}")
 
@@ -143,6 +266,7 @@ class Splat:
                     request.min_dbm,
                     request.max_dbm,
                 )
+                shutil.copy(ppm_path, "/Users/patrick/Downloads/output.ppm")
 
                 logger.info(f"GeoTIFF created: {output_tiff_path}")
 
@@ -451,14 +575,13 @@ if __name__ == "__main__":
     # Example test for Splat class
     try:
         splat_service = Splat(
-            splat_path="/Users/patrick/Dev/splat/splat",  # Replace with the actual SPLAT! binary path
-            tile_dir="/Volumes/Gandalf/datasets/sdf/data/sdf",  # Replace with the actual tile directory
+            splat_path="/Users/patrick/Dev/splat/splat-hd",  # Replace with the actual SPLAT! binary path
         )
 
         # Create a test coverage prediction request
         test_request = CoveragePredictionRequest(
-            lat=51.086365064829224,
-            lon=-114.12962354548324,
+            lat=51.08631115040277,
+            lon=-114.12940896854595,
             tx_height=5.0,
             ground_dielectric=15.0,
             ground_conductivity=0.005,
@@ -466,13 +589,13 @@ if __name__ == "__main__":
             frequency_mhz=905.0,
             radio_climate="continental_temperate",
             polarization="vertical",
-            situation_fraction=90.0,
+            situation_fraction=50.0,
             time_fraction=90.0,
             tx_power=20.0,
             tx_gain=1.0,
             system_loss=2.0,
             rxh=1.0,
-            radius=25000.0,
+            radius=10000.0,
             colormap="jet",
             min_dbm=-130.0,
             max_dbm=-90.0,
