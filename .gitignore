@@ -7,6 +7,7 @@ __pycache__/
 *.pyc
 log.txt
 *.log
+.tile_cache/
 splat/build/
 splat/utils/postdownload
 splat

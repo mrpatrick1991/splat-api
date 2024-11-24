@@ -100,3 +100,8 @@ class CoveragePredictionRequest(BaseModel):
         -30.0,
         description="Maximum dBm value for the colormap (default: -30.0).",
     )
+
+    high_resolution: bool = Field(
+        False,
+        description="Use optional 1-arcsecond / 30 meter resolution  terrain tiles instead of the default 3-arcsecond / 90 meter (default: False).",
+    )
