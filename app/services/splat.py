@@ -17,8 +17,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import rasterio
 from rasterio.enums import Resampling
-from PIL import Image
 from rasterio.transform import from_bounds
+from PIL import Image
 
 from app.models.CoveragePredictionRequest import CoveragePredictionRequest
 
@@ -59,7 +59,7 @@ class Splat:
             bucket_name (str): Name of the S3 bucket containing terrain tiles. Defaults to the AWS
                 open data bucket `elevation-tiles-prod`.
             bucket_prefix (str): Folder in the S3 bucket containing the terrain tiles. Defaults to
-                `v2/skadi`, which contains 1-arcsecond void-filled terrain data for most of the world.
+                `v2/skadi`, which contains 1-arcsecond terrain data for most of the world.
         """
 
         # Check the provided SPLAT! path exists
@@ -145,11 +145,11 @@ class Splat:
                     tile_data = self._download_terrain_tile(tile_name)
                     sdf_data = self._convert_hgt_to_sdf(tile_data, tile_name, high_resolution=request.high_resolution)
 
-                    with open(os.path.join(tmpdir, tile_name), "wb") as sdf_file:
+                    with open(os.path.join(tmpdir, sdf_hd_name if request.high_resolution else sdf_name), "wb") as sdf_file:
                         sdf_file.write(sdf_data)
 
                 # write transmitter / qth file
-                with open(os.path.join(tmpdir,"tx.qth"), "wb") as qth_file:
+                with open(os.path.join(tmpdir, "tx.qth"), "wb") as qth_file:
                     qth_file.write(Splat._create_splat_qth("tx",request.lat,request.lon,request.tx_height))
 
                 # write model parameter / lrp file
@@ -202,7 +202,7 @@ class Splat:
                 ]
                 logger.debug(f"Executing SPLAT! command: {' '.join(splat_command)}")
 
-                result = subprocess.run(
+                splat_result = subprocess.run(
                     splat_command,
                     cwd=tmpdir,
                     capture_output=True,
@@ -210,16 +210,16 @@ class Splat:
                     check=False,
                 )
 
-                logger.debug(f"SPLAT! stdout:\n{result.stdout}")
-                logger.debug(f"SPLAT! stderr:\n{result.stderr}")
+                logger.debug(f"SPLAT! stdout:\n{splat_result.stdout}")
+                logger.debug(f"SPLAT! stderr:\n{splat_result.stderr}")
 
-                if result.returncode != 0:
+                if splat_result.returncode != 0:
                     logger.error(
-                        f"SPLAT! execution failed with return code {result.returncode}"
+                        f"SPLAT! execution failed with return code {splat_result.returncode}"
                     )
                     raise RuntimeError(
-                        f"SPLAT! execution failed with return code {result.returncode}\n"
-                        f"Stdout: {result.stdout}\nStderr: {result.stderr}"
+                        f"SPLAT! execution failed with return code {splat_result.returncode}\n"
+                        f"Stdout: {splat_result.stdout}\nStderr: {splat_result.stderr}"
                     )
 
                 with open(os.path.join(tmpdir, "output.ppm"), "rb") as ppm_file:
@@ -290,7 +290,7 @@ class Splat:
         lon_max_tile = math.floor(lon_max)
 
         # All tile names within the bounding box
-        tile_tuples = []
+        tile_names = []
 
         for lat_tile in range(lat_min_tile, lat_max_tile + 1):
             for lon_tile in range(lon_min_tile, lon_max_tile + 1):
@@ -305,13 +305,11 @@ class Splat:
                 lon_end = lon_start + 1
 
                 # Generate .sdf file names
-                sdf_filename = f"{lat_start}:{lat_end}:{lon_start}:{lon_end}.sdf"
-                sdf_hd_filename = f"{lat_start}:{lat_end}:{lon_start}:{lon_end}-hd.sdf"
+                sdf_filename = Splat._hgt_filename_to_sdf_filename(tile_name, high_resolution = False)
+                sdf_hd_filename = Splat._hgt_filename_to_sdf_filename(tile_name, high_resolution = True)
+                tile_names.append((tile_name, sdf_filename, sdf_hd_filename))
 
-                # Append tuple to the list
-                tile_tuples.append((tile_name, sdf_filename, sdf_hd_filename))
-
-        return tile_tuples
+        return tile_names
 
     @staticmethod
     def _create_splat_qth(name: str, latitude: float, longitude: float, elevation: float) -> bytes:
@@ -565,7 +563,7 @@ class Splat:
             logger.error(f"Error during GeoTIFF generation: {e}")
             raise RuntimeError(f"Error during GeoTIFF generation: {e}")
 
-    def _download_terrain_tile(self, tile_name:str) -> bytes:
+    def _download_terrain_tile(self, tile_name: str) -> bytes:
         """
         Downloads a terrain tile from the S3 bucket if not found in the local cache.
 
@@ -600,6 +598,14 @@ class Splat:
             logger.error(f"Failed to download {tile_name} from S3: {e}")
             raise
 
+    @staticmethod
+    def _hgt_filename_to_sdf_filename(hgt_filename: str, high_resolution: bool = False) -> str:
+            """ helper method to get the expected SPLAT! .sdf filename from the .hgt.gz terrain tile."""
+            lat = int(hgt_filename[1:3]) * (1 if hgt_filename[0] == 'N' else -1)
+            lon = int(hgt_filename[4:7]) - 1
+            lon = 360 - lon if hgt_filename[3] == 'E' else lon
+            return f"{lat}:{lat + 1}:{lon}:{lon + 1}{'-hd.sdf' if high_resolution else '.sdf'}"
+
     def _convert_hgt_to_sdf(self, tile: bytes, tile_name: str, high_resolution: bool = False) -> bytes:
         """
         Converts a .hgt.gz terrain tile (provided as bytes) to a SPLAT! .sdf or -hd.sdf file.
@@ -620,18 +626,8 @@ class Splat:
         Raises:
             RuntimeError: If the conversion process fails.
         """
-        # Predict .sdf filename
-        lat, lon = int(tile_name[1:3]), int(tile_name[4:7]) * (-1 if "W" in tile_name else 1)
-        lat_end, lon_end = lat + 1, lon + 1
-        # Normalize longitude to SPLAT!'s expected format (positive longitudes only)
-        lon_splat = 360 + lon if lon < 0 else lon
-        lon_end_splat = 360 + lon_end if lon_end < 0 else lon_end
 
-        sdf_filename = (
-            f"{lat}:{lat_end}:{lon_splat}:{lon_end_splat}-hd.sdf"
-            if high_resolution
-            else f"{lat}:{lat_end}:{lon_splat}:{lon_end_splat}.sdf"
-        )
+        sdf_filename = Splat._hgt_filename_to_sdf_filename(tile_name, high_resolution)
 
         # Check cache for converted file
         if sdf_filename in self.tile_cache:
@@ -648,7 +644,7 @@ class Splat:
                     with open(hgt_path, "wb") as hgt_file:
                         hgt_file.write(gz_file.read())
 
-                    # Downsample to 3-arcsecond resolution if not in high-resolution mode
+                # Downsample to 3-arcsecond resolution if not in high-resolution mode
                 if not high_resolution:
                     try:
                         logger.info(f"Downsampling {hgt_path} to 3-arcsecond resolution.")
@@ -658,10 +654,11 @@ class Splat:
 
                             # Resample data to 3-arcsecond resolution
                             data = src.read(
+                                # 3-arcsecond SRTM tiles always have dimensions of 1201x1201 pixels.
                                 out_shape=(
                                     src.count,  # Number of bands
-                                    src.height // 3,  # Downsampled height
-                                    src.width // 3,  # Downsampled width
+                                    1201,   # Downsampled height
+                                    1201,   # Downsampled width
                                 ),
                                 resampling=Resampling.average,
                             )
@@ -671,8 +668,8 @@ class Splat:
                             meta.update(
                                 {
                                     "transform": transform,
-                                    "width": src.width // 3,
-                                    "height": src.height // 3,
+                                    "width": 1201,
+                                    "height": 1201,
                                 }
                             )
 
@@ -748,12 +745,12 @@ if __name__ == "__main__":
             tx_gain=2.0,
             system_loss=2.0,
             rxh=1.0,
-            radius=1000.0,
+            radius=25000.0,
             colormap="jet",
             min_dbm=-130.0,
             max_dbm=-80.0,
             signal_threshold=-130.0,
-            high_resolution=True,
+            high_resolution=False,
         )
 
         # Execute coverage prediction
