@@ -6,7 +6,7 @@ import io
 import subprocess
 import tempfile
 import xml.etree.ElementTree as ET
-from typing import Literal, List, Tuple
+from typing import Literal, List, Tuple, Any, Dict
 
 import boto3
 from botocore import UNSIGNED
@@ -19,8 +19,10 @@ import rasterio
 from rasterio.enums import Resampling
 from rasterio.transform import from_bounds
 from PIL import Image
+import haversine
 
 from app.models.CoveragePredictionRequest import CoveragePredictionRequest
+from app.models.PathAnalysisRequest import PathAnalysisRequest
 
 
 logger = logging.getLogger(__name__)
@@ -118,12 +120,106 @@ class Splat:
             f"Initialized SPLAT! with terrain tile cache at '{cache_dir}' with a size limit of {cache_size_gb} GB."
         )
 
-    def coverage_prediction(self, request: CoveragePredictionRequest) -> bytes:
+    def path_analysis(self, request: PathAnalysisRequest) ->  Dict[str, Any]:
         """
-        Execute a SPLAT! coverage prediction using the provided CoveragePredictRequest.
+        Execute a SPLAT! path analysis between a transmitter and receiver using the provided PathAnalysisRequest.
 
         Args:
-            request (CoveragePredictRequest): The coverage prediction request object.
+            request (PathAnalysisRequest): The path analysis request object.
+
+        Returns:
+             Dict[str, Any]: a GeoJSON encoding the path analysis
+        """
+        logger.debug(f"Path analysis request: {request.json()}")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            try:
+                logger.debug(f"Temporary directory created: {tmpdir}")
+
+                # distance between transmitter and reciever coordinates
+                path_distance = haversine.haversine((request.tx_lat, request.tx_lon), request.rx_lat, request.rx_lon)
+
+                # required terrain tiles
+                required_tiles = Splat._calculate_required_terrain_tiles(request.tx_lat, request.tx_lon, request.radius*1000)
+
+                # download and convert terrain tiles to SPLAT! sdf
+                for tile_name, sdf_name, sdf_hd_name in required_tiles:
+                    tile_data = self._download_terrain_tile(tile_name)
+                    sdf_data = self._convert_hgt_to_sdf(tile_data, tile_name, high_resolution=request.high_resolution)
+
+                    with open(os.path.join(tmpdir, sdf_hd_name if request.high_resolution else sdf_name), "wb") as sdf_file:
+                        sdf_file.write(sdf_data)
+
+                # write transmitter / qth file
+                with open(os.path.join(tmpdir, "tx.qth"), "wb") as qth_file:
+                    qth_file.write(Splat._create_splat_qth("tx", request.tx_lat, request.tx_lon, request.tx_height))
+
+                # write receiver / qth file
+                with open(os.path.join(tmpdir, "rx.qth"), "wb") as qth_file:
+                    qth_file.write(Splat._create_splat_qth("rx", request.rx_lat, request.rx_lon, request.rx_height))
+
+                # write model parameter / lrp file
+                with open(os.path.join(tmpdir, "splat.lrp"), "wb") as lrp_file:
+                    lrp_file.write(Splat._create_splat_lrp(
+                        ground_dielectric=request.ground_dielectric,
+                        ground_conductivity=request.ground_conductivity,
+                        atmosphere_bending=request.atmosphere_bending,
+                        frequency_mhz=request.frequency_mhz,
+                        radio_climate=request.radio_climate,
+                        polarization=request.polarization,
+                        situation_fraction=request.situation_fraction,
+                        time_fraction=request.time_fraction,
+                        tx_power=request.tx_power,
+                        tx_gain=request.tx_gain,
+                        system_loss=request.system_loss))
+
+            logger.debug(f"Contents of {tmpdir}: {os.listdir(tmpdir)}")
+
+            splat_command = [
+                (
+                    self.splat_hd_binary
+                    if request.high_resolution
+                    else self.splat_binary
+                ),
+                "-t",
+                "tx.qth",
+                "-r",
+                "rx.qth",
+                "-metric"
+            ]
+            logger.debug(f"Executing SPLAT! command: {' '.join(splat_command)}")
+
+            splat_result = subprocess.run(
+                splat_command,
+                cwd=tmpdir,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            logger.debug(f"SPLAT! stdout:\n{splat_result.stdout}")
+            logger.debug(f"SPLAT! stderr:\n{splat_result.stderr}")
+
+            if splat_result.returncode != 0:
+                logger.error(
+                    f"SPLAT! execution failed with return code {splat_result.returncode}"
+                )
+                raise RuntimeError(
+                    f"SPLAT! execution failed with return code {splat_result.returncode}\n"
+                    f"Stdout: {splat_result.stdout}\nStderr: {splat_result.stderr}"
+                )
+
+
+
+
+
+
+    def coverage_prediction(self, request: CoveragePredictionRequest) -> bytes:
+        """
+        Execute a SPLAT! coverage prediction using the provided CoveragePredictionRequest.
+
+        Args:
+            request (CoveragePredictionRequest): The coverage prediction request object.
 
         Returns:
             bytes: the SPLAT! coverage prediction as a GeoTIFF.
@@ -745,8 +841,8 @@ if __name__ == "__main__":
             tx_gain=2.0,
             system_loss=2.0,
             rxh=1.0,
-            radius=25000.0,
-            colormap="jet",
+            radius=20000.0,
+            colormap="turbo",
             min_dbm=-130.0,
             max_dbm=-80.0,
             signal_threshold=-130.0,
