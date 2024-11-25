@@ -11,3 +11,4 @@ log.txt
 splat/build/
 splat/utils/postdownload
 splat
+.splat_tiles/
