@@ -1,12 +1,14 @@
 import gzip
 import logging
 import math
+import sys
 import os
 import io
 import subprocess
 import tempfile
 import xml.etree.ElementTree as ET
 from typing import Literal, List, Tuple, Any, Dict
+from geojson import Feature, Point, LineString, FeatureCollection
 
 import boto3
 from botocore import UNSIGNED
@@ -120,7 +122,8 @@ class Splat:
             f"Initialized SPLAT! with terrain tile cache at '{cache_dir}' with a size limit of {cache_size_gb} GB."
         )
 
-    def path_analysis(self, request: PathAnalysisRequest) ->  Dict[str, Any]:
+    # needs to be Dict[str, Any] for geojson eventually
+    def path_analysis(self, request: PathAnalysisRequest) -> dict:
         """
         Execute a SPLAT! path analysis between a transmitter and receiver using the provided PathAnalysisRequest.
 
@@ -136,11 +139,12 @@ class Splat:
             try:
                 logger.debug(f"Temporary directory created: {tmpdir}")
 
-                # distance between transmitter and reciever coordinates
-                path_distance = haversine.haversine((request.tx_lat, request.tx_lon), request.rx_lat, request.rx_lon)
+                # distance between transmitter and receiver coordinates
+                path_distance = haversine.haversine((request.tx_lat, request.tx_lon), (request.rx_lat, request.rx_lon))
+                logger.debug(f"Path distance is {path_distance} kilometers.")
 
                 # required terrain tiles
-                required_tiles = Splat._calculate_required_terrain_tiles(request.tx_lat, request.tx_lon, request.radius*1000)
+                required_tiles = Splat._calculate_required_terrain_tiles(request.tx_lat, request.tx_lon, path_distance*1000)
 
                 # download and convert terrain tiles to SPLAT! sdf
                 for tile_name, sdf_name, sdf_hd_name in required_tiles:
@@ -150,11 +154,11 @@ class Splat:
                     with open(os.path.join(tmpdir, sdf_hd_name if request.high_resolution else sdf_name), "wb") as sdf_file:
                         sdf_file.write(sdf_data)
 
-                # write transmitter / qth file
+                # transmitter qth file
                 with open(os.path.join(tmpdir, "tx.qth"), "wb") as qth_file:
                     qth_file.write(Splat._create_splat_qth("tx", request.tx_lat, request.tx_lon, request.tx_height))
 
-                # write receiver / qth file
+                # receiver qth file
                 with open(os.path.join(tmpdir, "rx.qth"), "wb") as qth_file:
                     qth_file.write(Splat._create_splat_qth("rx", request.rx_lat, request.rx_lon, request.rx_height))
 
@@ -173,47 +177,141 @@ class Splat:
                         tx_gain=request.tx_gain,
                         system_loss=request.system_loss))
 
-            logger.debug(f"Contents of {tmpdir}: {os.listdir(tmpdir)}")
+                logger.debug(f"Contents of {tmpdir}: {os.listdir(tmpdir)}")
 
-            splat_command = [
-                (
-                    self.splat_hd_binary
-                    if request.high_resolution
-                    else self.splat_binary
-                ),
-                "-t",
-                "tx.qth",
-                "-r",
-                "rx.qth",
-                "-metric"
-            ]
-            logger.debug(f"Executing SPLAT! command: {' '.join(splat_command)}")
+                splat_command = [
+                    (
+                        self.splat_hd_binary
+                        if request.high_resolution
+                        else self.splat_binary
+                    ),
+                    "-t",
+                    "tx.qth",
+                    "-r",
+                    "rx.qth",
+                    "-metric"
+                ]
+                logger.debug(f"Executing SPLAT! command: {' '.join(splat_command)}")
 
-            splat_result = subprocess.run(
-                splat_command,
-                cwd=tmpdir,
-                capture_output=True,
-                text=True,
-                check=False,
+                splat_result = subprocess.run(
+                    splat_command,
+                    cwd=tmpdir,
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+
+                logger.debug(f"SPLAT! stdout:\n{splat_result.stdout}")
+                logger.debug(f"SPLAT! stderr:\n{splat_result.stderr}")
+
+                if splat_result.returncode != 0:
+                    logger.error(
+                        f"SPLAT! execution failed with return code {splat_result.returncode}"
+                    )
+                    raise RuntimeError(
+                        f"SPLAT! execution failed with return code {splat_result.returncode}\n"
+                        f"Stdout: {splat_result.stdout}\nStderr: {splat_result.stderr}"
+                    )
+
+                with open(os.path.join(tmpdir, "tx-to-rx.txt"), "rb") as path_report:
+                    path_data = path_report.read()
+
+
+                logger.info("SPLAT! path analysis completed successfully.")
+                return Splat._parse_path_analysis(path_data)
+
+            except Exception as e:
+                logger.error(f"Error during path analysis: {e}")
+                raise RuntimeError(f"Error during path analysis: {e}")
+    @staticmethod
+    def _parse_coordinates(line: str):
+        """
+        Parse a coordinate line into latitude and longitude as floats.
+        """
+        lat, lon = line.split("/")[0].split(", ")
+        lat = float(lat.strip().split()[0])
+        lon = float(lon.strip().split()[0])
+        return lat, lon
+
+    @staticmethod
+    def _parse_path_analysis(output: bytes) -> Dict:
+        """
+        Parse the SPLAT! path analysis output from bytes and return as GeoJSON.
+        """
+        # Decode the bytes into a string
+        output_str = output.decode('latin-1')
+        print("output: ", output_str)
+        lines = output_str.splitlines()
+        transmitter = {}
+        receiver = {}
+        obstructions = []
+        link_path = []
+
+        # Parse transmitter and receiver sections
+        for i, line in enumerate(lines):
+            if line.startswith("Transmitter site:"):
+                transmitter["name"] = line.split(":")[1].strip()
+            elif line.startswith("Site location:") and "Transmitter site:" in lines[i - 1]:
+                lat, lon = Splat._parse_coordinates(line)
+                transmitter["lat"], transmitter["lon"] = lat, lon
+            elif line.startswith("Ground elevation:") and "Transmitter site:" in lines[i - 2]:
+                transmitter["elevation"] = float(line.split(":")[1].strip().split()[0])
+            elif line.startswith("Antenna height:") and "Transmitter site:" in lines[i - 3]:
+                transmitter["antenna_height"] = float(line.split(":")[1].strip().split()[0])
+            elif line.startswith("Receiver site:"):
+                receiver["name"] = line.split(":")[1].strip()
+            elif line.startswith("Site location:") and "Receiver site:" in lines[i - 1]:
+                lat, lon = Splat._parse_coordinates(line)
+                receiver["lat"], receiver["lon"] = lat, lon
+            elif line.startswith("Ground elevation:") and "Receiver site:" in lines[i - 2]:
+                receiver["elevation"] = float(line.split(":")[1].strip().split()[0])
+            elif line.startswith("Antenna height:") and "Receiver site:" in lines[i - 3]:
+                receiver["antenna_height"] = float(line.split(":")[1].strip().split()[0])
+
+        # Create GeoJSON features
+        transmitter_feature = Feature(
+            geometry=Point((transmitter["lon"], transmitter["lat"])),
+            properties={
+                "name": transmitter["name"],
+                "elevation": transmitter["elevation"],
+                "antenna_height": transmitter["antenna_height"],
+            },
+        )
+
+        receiver_feature = Feature(
+            geometry=Point((receiver["lon"], receiver["lat"])),
+            properties={
+                "name": receiver["name"],
+                "elevation": receiver["elevation"],
+                "antenna_height": receiver["antenna_height"],
+            },
+        )
+
+        # LineString for the link path
+        link_path = [
+            (transmitter["lon"], transmitter["lat"]),
+            (receiver["lon"], receiver["lat"]),
+        ]
+        link_path_feature = Feature(
+            geometry=LineString(link_path),
+            properties={"type": "link"},
+        )
+
+        # Points for obstructions
+        obstruction_features = [
+            Feature(
+                geometry=Point((obs["lon"], obs["lat"])),
+                properties={
+                    "distance": obs["distance"],
+                    "elevation": obs["elevation"],
+                },
             )
+            for obs in obstructions
+        ]
 
-            logger.debug(f"SPLAT! stdout:\n{splat_result.stdout}")
-            logger.debug(f"SPLAT! stderr:\n{splat_result.stderr}")
-
-            if splat_result.returncode != 0:
-                logger.error(
-                    f"SPLAT! execution failed with return code {splat_result.returncode}"
-                )
-                raise RuntimeError(
-                    f"SPLAT! execution failed with return code {splat_result.returncode}\n"
-                    f"Stdout: {splat_result.stdout}\nStderr: {splat_result.stderr}"
-                )
-
-
-
-
-
-
+        # Combine features into a FeatureCollection
+        features = [transmitter_feature, receiver_feature, link_path_feature] + obstruction_features
+        return FeatureCollection(features)
     def coverage_prediction(self, request: CoveragePredictionRequest) -> bytes:
         """
         Execute a SPLAT! coverage prediction using the provided CoveragePredictionRequest.
@@ -443,8 +541,6 @@ class Splat:
             ground_conductivity: float,
             atmosphere_bending: float,
             frequency_mhz: float,
-            situation_fraction: float,
-            time_fraction: float,
             tx_power: float,
             tx_gain: float,
             system_loss: float,
@@ -458,6 +554,9 @@ class Splat:
                 "maritime_temperate_sea",
             ],
             polarization: Literal["horizontal", "vertical"],
+            situation_fraction: float = 90.0,
+            time_fraction: float = 90.0,
+            fresnel_zone: float = 60.0
     ) -> bytes:
         """
         Generate the contents of a SPLAT! .lrp file describing environment and propagation parameters.
@@ -824,8 +923,38 @@ if __name__ == "__main__":
             splat_path="/Users/patrick/Dev/splat",  # Replace with the actual SPLAT! binary path
         )
 
+
+
+        test_pathanalysis_request = PathAnalysisRequest(
+            tx_lat=51.08631115040277,
+            tx_lon=-114.12940896854595,
+            rx_lat=51.18631115040277,
+            rx_lon=-114.32940896854595,
+            tx_height=5.0,
+            rx_height=1.0,
+            ground_dielectric=15.0,
+            ground_conductivity=0.005,
+            atmosphere_bending=301.0,
+            frequency_mhz=905.0,
+            radio_climate="continental_temperate",
+            polarization="vertical",
+            tx_power=30.0,
+            tx_gain=2.0,
+            system_loss=2.0,
+            high_resolution=False,
+            situation_fraction=90.0,
+            time_fraction=90.0,
+        )
+
+        # Execute path analyis
+        logger.info("Starting SPLAT! path analysis...")
+        result = splat_service.path_analysis(test_pathanalysis_request)
+        print(result)
+        sys.exit(0)
+
+
         # Create a test coverage prediction request
-        test_request = CoveragePredictionRequest(
+        test_coverage_request = CoveragePredictionRequest(
             lat=51.08631115040277,
             lon=-114.12940896854595,
             tx_height=5.0,
@@ -851,7 +980,7 @@ if __name__ == "__main__":
 
         # Execute coverage prediction
         logger.info("Starting SPLAT! coverage prediction...")
-        result = splat_service.coverage_prediction(test_request)
+        result = splat_service.coverage_prediction(test_coverage_request)
 
         # Save GeoTIFF output for inspection
         output_path = "splat_output.tif"

@@ -68,3 +68,12 @@ class PathAnalysisRequest(BaseModel):
         ge=0,
         description="Percentage of Fresnel zone clearance (default: 60%).",
     )
+
+    high_resolution: bool = Field(
+        False,
+        description="Use optional 1-arcsecond / 30 meter resolution  terrain tiles instead of the default 3-arcsecond / 90 meter (default: False).",
+    )
+
+    system_loss: Optional[float] = Field(
+        0.0, ge=0, description="System loss in dB (default: 0.0)"
+    )
