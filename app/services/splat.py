@@ -525,14 +525,17 @@ class Splat:
             transform = from_bounds(west, south, east, north, width, height)
             logger.debug(f"GeoTIFF transform matrix: {transform}")
 
-            # Generate colormap from Matplotlib
-            cmap = plt.get_cmap(colormap_name)
-            cmap_values = np.linspace(min_dbm, max_dbm, 256)
-            cmap_norm = plt.Normalize(vmin=min_dbm, vmax=max_dbm)
+            # Generate colormap with transparency
+            cmap = plt.get_cmap(colormap_name, 256)  # Viridis colormap with 256 levels
+            cmap_norm = plt.Normalize(vmin=min_dbm, vmax=max_dbm)  # Normalize based on dBm range
+            cmap_values = np.linspace(min_dbm, max_dbm, 255)
+
+            # Map data values to RGB for visible colors
             rgb_colors = (cmap(cmap_norm(cmap_values))[:, :3] * 255).astype(int)
 
-            # Build GDAL-compatible colormap
-            gdal_colormap = {i: tuple(rgb) for i, rgb in enumerate(rgb_colors)}
+            # Initialize GDAL-compatible colormap with transparency for the background
+            gdal_colormap = {i: tuple(rgb) + (255,) for i, rgb in enumerate(rgb_colors)}  # Normal colors
+            gdal_colormap[255] = (255, 255, 255, 0)  # Fully transparent background
 
             # Write GeoTIFF to memory
             with io.BytesIO() as buffer:
@@ -542,17 +545,15 @@ class Splat:
                         driver="GTiff",
                         height=height,
                         width=width,
-                        count=1,  # Single-band data with colormap
+                        count=1,  # Single-band data
                         dtype="uint8",
                         crs="EPSG:4326",
                         transform=transform,
+                        photometric="palette",  # Colormap interpretation
                         compress="lzw",
                 ) as dst:
-                    dst.write(img_array, 1)  # Write grayscale data
-                    dst.write_colormap(
-                        1, gdal_colormap
-                    )  # Attach colormap to the first band
-                    dst.update_tags(description="SPLAT! coverage prediction")
+                    dst.write(img_array, 1)  # Write the raster data
+                    dst.write_colormap(1, gdal_colormap)  # Attach the colormap
 
                 buffer.seek(0)
                 geotiff_bytes = buffer.read()

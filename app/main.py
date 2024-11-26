@@ -89,7 +89,7 @@ async def predict(payload: CoveragePredictionRequest, background_tasks: Backgrou
 @app.get("/result/{task_id}")
 async def get_result(task_id: str):
     """
-    Retrieve task status or GeoTIFF result.
+    Retrieve SPLAT! task status or GeoTIFF result.
 
     - Checks the task status in Redis.
     - If "completed," retrieves the GeoTIFF data and serves it as a downloadable file.
