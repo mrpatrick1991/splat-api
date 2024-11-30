@@ -12,3 +12,5 @@ splat/build/
 splat/utils/postdownload
 splat
 .splat_tiles/
+app/ui/node*
+app/ui/*.json
