@@ -4,13 +4,13 @@ const map = L.map("map", {
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19,
-  attribution: "© OpenStreetMap contributors"
+  attribution: "© OpenStreetMap contributors",
 }).addTo(map);
 
-L.control.zoom({ position: "topright" }).addTo(map);
+L.control.zoom({ position: "topleft" }).addTo(map);
 
 var lc = L.control
   .locate({
-    position: "topright",
+    position: "topleft",
   })
   .addTo(map);

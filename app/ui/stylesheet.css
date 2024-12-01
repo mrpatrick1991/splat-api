@@ -11,3 +11,6 @@ body {
   padding: 0;
 }
 
+.leaflet-top {
+  top: 70px; /* Adjust this value to the height of your navbar */
+}

@@ -6,12 +6,11 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
-
-    <title>SPLAT! Radio Coverage Model</title>
-      <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
+    <title>SPLAT! Radio Coverage Prediction</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -21,43 +20,273 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.82.0/dist/L.Control.Locate.min.css"
     />
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.82.0/dist/L.Control.Locate.min.js"></script>
   </head>
 
   <body>
-<nav class="navbar navbar-expand-lg bg-body-tertiary">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#">SPLAT! Radio Signal Prediction</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="#">Coverage</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" aria-current="page" href="#">Point to Point</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" aria-current="page" href="#">Mesh</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Docs</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">GitHub</a>
-        </li>
-      </ul>
-    </div>
-  </div>
-</nav>
+    <nav class="navbar navbar-dark bg-dark fixed-top">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">SPLAT! Radio Coverage Prediction</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#offcanvasDarkNavbar"
+          aria-controls="offcanvasDarkNavbar"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div
+          class="offcanvas offcanvas-end text-bg-dark show"
+          tabindex="-1"
+          id="offcanvasDarkNavbar"
+          aria-labelledby="offcanvasDarkNavbarLabel"
+          data-bs-backdrop="false"
+        >
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasDarkNavbarLabel">Model Input</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="offcanvas"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="offcanvas-body">
+            <ul class="navbar-nav">
+              <!-- Transmitter Dropdown -->
+              <li class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                  data-bs-auto-close="outside"
+                  aria-expanded="true"
+                >
+                  Transmitter
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark p-3 show">
+                  <li>
+                    <form>
+                      <div class="mb-2">
+                        <label for="tx_lat" class="form-label">Latitude (degrees)</label>
+                        <input
+                          type="text"
+                          class="form-control form-control-sm"
+                          id="tx_lat"
+                          placeholder=""
+                        />
+                      </div>
+                      <div class="mb-2">
+                        <label for="tx_lon" class="form-label">Longitude (degrees)</label>
+                        <input
+                          type="text"
+                          class="form-control form-control-sm"
+                          id="tx_lon"
+                          placeholder=""
+                        />
+                      </div>
+                      <div class="mb-2">
+                        <label for="tx_height" class="form-label">Height above ground (m)</label>
+                        <input
+                          type="text"
+                          class="form-control form-control-sm"
+                          id="tx_height"
+                          placeholder=""
+                        />
+                      </div>
+                      <div class="mb-2 d-flex gap-2">
+                        <button
+                          type="button"
+                          id="setWithMap"
+                          class="btn btn-primary btn-sm"
+                          data-bs-toggle="popover"
+                          data-bs-trigger="manual"
+                          data-bs-placement="top"
+                          title="Set Coordinates"
+                          data-bs-content="Click on the map to set coordinates"
+                        >
+                          Set with Map
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm">
+                          Center on Coordinates
+                        </button>
+                      </div>
+                    </form>
+                  </li>
+                </ul>
+              </li>
+
+              <!-- Receiver Dropdown -->
+              <li class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                  data-bs-auto-close="outside"
+                  aria-expanded="false"
+                >
+                  Receiver
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark p-3 show">
+                  <li>
+                    <form>
+                      <div class="mb-2">
+                        <label for="rx_height" class="form-label">Height above ground (m)</label>
+                        <input
+                          type="text"
+                          class="form-control form-control-sm"
+                          id="rx_height"
+                          placeholder=""
+                        />
+                      </div>
+                      <div class="mb-2">
+                        <label for="rx_sensitivity" class="form-label">Sensitivity (dBm)</label>
+                        <input
+                          type="text"
+                          class="form-control form-control-sm"
+                          id="rx_sensitivity"
+                          placeholder=""
+                        />
+                      </div>
+                    </form>
+                  </li>
+                </ul>
+              </li>
+
+              <!-- Antennas Dropdown -->
+              <li class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                  data-bs-auto-close="outside"
+                  aria-expanded="false"
+                >
+                  Antennas
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark p-3">
+                  <li>
+                    <form>
+                      <div class="row">
+                        <!-- Transmitter Column -->
+                        <div class="col-md-6">
+                          <h6 class="text-light">Transmitter</h6>
+                          <div class="mb-2">
+                            <label for="tx_gain" class="form-label">Gain (dB)</label>
+                            <input
+                              type="text"
+                              class="form-control form-control-sm"
+                              id="tx_gain"
+                              placeholder=""
+                            />
+                          </div>
+                          <div class="mb-2">
+                            <label for="tx_power" class="form-label">Power (W)</label>
+                            <input
+                              type="text"
+                              class="form-control form-control-sm"
+                              id="tx_power"
+                              placeholder=""
+                            />
+                          </div>
+                        </div>
+
+                        <!-- Receiver Column -->
+                        <div class="col-md-6">
+                          <h6 class="text-light">Receiver</h6>
+                          <div class="mb-2">
+                            <label for="rx_gain" class="form-label">Gain (dB)</label>
+                            <input
+                              type="text"
+                              class="form-control form-control-sm"
+                              id="rx_gain"
+                              placeholder=""
+                            />
+                          </div>
+                          <div class="mb-2">
+                            <label for="rx_power" class="form-label">Power (W)</label>
+                            <input
+                              type="text"
+                              class="form-control form-control-sm"
+                              id="rx_power"
+                              placeholder=""
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div class="mt-2">
+                        <button type="button" class="btn btn-success btn-sm">Set Antennas</button>
+                      </div>
+                    </form>
+                  </li>
+                </ul>
+              </li>
+
+              <!-- Environment Dropdown -->
+              <li class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                  data-bs-auto-close="outside"
+                  aria-expanded="false"
+                >
+                  Environment
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark p-3">
+                  <li>
+                    <form>
+                      <div class="mb-2">
+                        <label for="env_lat" class="form-label">Latitude</label>
+                        <input
+                          type="text"
+                          class="form-control form-control-sm"
+                          id="env_lat"
+                          placeholder=""
+                        />
+                      </div>
+                      <div class="mb-2">
+                        <label for="env_lon" class="form-label">Longitude</label>
+                        <input
+                          type="text"
+                          class="form-control form-control-sm"
+                          id="env_lon"
+                          placeholder=""
+                        />
+                      </div>
+                      <div class="mb-2">
+                        <label for="env_terrain" class="form-label">Terrain Type</label>
+                        <input
+                          type="text"
+                          class="form-control form-control-sm"
+                          id="env_terrain"
+                          placeholder="e.g., Urban"
+                        />
+                      </div>
+                      <div class="mb-2">
+                        <button type="button" class="btn btn-warning btn-sm">Set Environment</button>
+                      </div>
+                    </form>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </nav>
 
     <div id="map"></div>
-    <script src="map.js"></script>
 
+    <script src="map.js"></script>
+    <script src="input.js"></script>
   </body>
 </html>
