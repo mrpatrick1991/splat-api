@@ -47,7 +47,9 @@
           data-bs-backdrop="false"
         >
           <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="offcanvasDarkNavbarLabel">Model Input</h5>
+            <h5 class="offcanvas-title" id="offcanvasDarkNavbarLabel">
+              Model Input
+            </h5>
             <button
               type="button"
               class="btn-close btn-close-white"
@@ -71,49 +73,150 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-dark p-3 show">
                   <li>
-                    <form>
-                      <div class="mb-2">
-                        <label for="tx_lat" class="form-label">Latitude (degrees)</label>
-                        <input
-                          type="text"
-                          class="form-control form-control-sm"
-                          id="tx_lat"
-                          placeholder=""
-                        />
+                    <form novalidate>
+                      <!-- First Row: Latitude and Longitude -->
+                      <div class="row g-2">
+                        <div class="col-6">
+                          <label for="tx_lat" class="form-label"
+                            >Latitude (degrees)</label
+                          >
+                          <input
+                            type="number"
+                            class="form-control form-control-sm"
+                            id="tx_lat"
+                            required
+                            min="-90"
+                            max="90"
+                            step="0.000001"
+                            data-bs-toggle="tooltip"
+                            title="Transmitter latitude in degrees (-90 to 90)."
+                            value="51.102167"
+                          />
+                          <div class="invalid-feedback">
+                            Please enter a valid latitude (-90 to 90).
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <label for="tx_lon" class="form-label"
+                            >Longitude (degrees)</label
+                          >
+                          <input
+                            type="number"
+                            class="form-control form-control-sm"
+                            id="tx_lon"
+                            required
+                            min="-180"
+                            max="180"
+                            step="0.000001"
+                            data-bs-toggle="tooltip"
+                            title="Transmitter longitude in degrees (-180 to 180)."
+                            value="-114.098667"
+                          />
+                          <div class="invalid-feedback">
+                            Please enter a valid longitude (-180 to 180).
+                          </div>
+                        </div>
                       </div>
-                      <div class="mb-2">
-                        <label for="tx_lon" class="form-label">Longitude (degrees)</label>
-                        <input
-                          type="text"
-                          class="form-control form-control-sm"
-                          id="tx_lon"
-                          placeholder=""
-                        />
+
+                      <!-- Second Row: Power and Frequency -->
+                      <div class="row g-2 mt-2">
+                        <div class="col-6">
+                          <label for="tx_power" class="form-label"
+                            >Power (W)</label
+                          >
+                          <input
+                            type="number"
+                            class="form-control form-control-sm"
+                            id="tx_power"
+                            required
+                            min="0"
+                            step="0.1"
+                            data-bs-toggle="tooltip"
+                            title="Transmitter power in watts (>0)."
+                            value="50.0"
+                          />
+                          <div class="invalid-feedback">
+                            Power must be a positive number.
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <label for="frequency" class="form-label"
+                            >Frequency (MHz)</label
+                          >
+                          <input
+                            type="number"
+                            class="form-control form-control-sm"
+                            id="tx_freq"
+                            required
+                            min="20"
+                            max="20000"
+                            step="0.1"
+                            data-bs-toggle="tooltip"
+                            title="Transmitter frequency in MHz (20 to 20,000)."
+                            value="144.390"
+                          />
+                          <div class="invalid-feedback">
+                            Frequency must be a positive number.
+                          </div>
+                        </div>
                       </div>
-                      <div class="mb-2">
-                        <label for="tx_height" class="form-label">Height above ground (m)</label>
-                        <input
-                          type="text"
-                          class="form-control form-control-sm"
-                          id="tx_height"
-                          placeholder=""
-                        />
+
+                      <!-- Third Row: Height and Antenna Gain -->
+                      <div class="row g-2 mt-2">
+                        <div class="col-6">
+                          <label for="tx_height" class="form-label"
+                            >Height AGL (m)</label
+                          >
+                          <input
+                            type="number"
+                            class="form-control form-control-sm"
+                            id="tx_height"
+                            required
+                            min="1.0"
+                            step="0.1"
+                            data-bs-toggle="tooltip"
+                            title="Transmitter height above ground in meters (>= 1.0)."
+                            value="5.0"
+                          />
+                          <div class="invalid-feedback">
+                            Height must be a positive number.
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <label for="tx_gain" class="form-label"
+                            >Antenna Gain (dB)</label
+                          >
+                          <input
+                            type="number"
+                            class="form-control form-control-sm"
+                            id="tx_gain"
+                            required
+                            min="0"
+                            step="0.1"
+                            value="4.0"
+                          />
+                          <div class="invalid-feedback">
+                            Gain must be a positive number.
+                          </div>
+                        </div>
                       </div>
-                      <div class="mb-2 d-flex gap-2">
+
+                      <!-- Action Buttons -->
+                      <div class="mt-3 d-flex gap-2">
                         <button
                           type="button"
                           id="setWithMap"
                           class="btn btn-primary btn-sm"
                           data-bs-toggle="popover"
                           data-bs-trigger="manual"
-                          data-bs-placement="top"
+                          data-bs-placement="left"
                           title="Set Coordinates"
-                          data-bs-content="Click on the map to set coordinates"
+                          data-bs-content="Click on the map to set the transmitter location."
                         >
                           Set with Map
                         </button>
                         <button type="button" class="btn btn-secondary btn-sm">
-                          Center on Coordinates
+                          Center map on transmitter
                         </button>
                       </div>
                     </form>
@@ -121,7 +224,6 @@
                 </ul>
               </li>
 
-              <!-- Receiver Dropdown -->
               <li class="nav-item dropdown">
                 <a
                   class="nav-link dropdown-toggle"
@@ -133,103 +235,88 @@
                 >
                   Receiver
                 </a>
-                <ul class="dropdown-menu dropdown-menu-dark p-3 show">
-                  <li>
-                    <form>
-                      <div class="mb-2">
-                        <label for="rx_height" class="form-label">Height above ground (m)</label>
-                        <input
-                          type="text"
-                          class="form-control form-control-sm"
-                          id="rx_height"
-                          placeholder=""
-                        />
-                      </div>
-                      <div class="mb-2">
-                        <label for="rx_sensitivity" class="form-label">Sensitivity (dBm)</label>
-                        <input
-                          type="text"
-                          class="form-control form-control-sm"
-                          id="rx_sensitivity"
-                          placeholder=""
-                        />
-                      </div>
-                    </form>
-                  </li>
-                </ul>
-              </li>
-
-              <!-- Antennas Dropdown -->
-              <li class="nav-item dropdown">
-                <a
-                  class="nav-link dropdown-toggle"
-                  href="#"
-                  role="button"
-                  data-bs-toggle="dropdown"
-                  data-bs-auto-close="outside"
-                  aria-expanded="false"
-                >
-                  Antennas
-                </a>
                 <ul class="dropdown-menu dropdown-menu-dark p-3">
                   <li>
-                    <form>
-                      <div class="row">
-                        <!-- Transmitter Column -->
-                        <div class="col-md-6">
-                          <h6 class="text-light">Transmitter</h6>
-                          <div class="mb-2">
-                            <label for="tx_gain" class="form-label">Gain (dB)</label>
-                            <input
-                              type="text"
-                              class="form-control form-control-sm"
-                              id="tx_gain"
-                              placeholder=""
-                            />
-                          </div>
-                          <div class="mb-2">
-                            <label for="tx_power" class="form-label">Power (W)</label>
-                            <input
-                              type="text"
-                              class="form-control form-control-sm"
-                              id="tx_power"
-                              placeholder=""
-                            />
+                    <form novalidate>
+                      <div class="row g-2">
+                        <!-- Sensitivity -->
+                        <div class="col-6">
+                          <label for="rx_sensitivity" class="form-label"
+                            >Sensitivity (dBm)</label
+                          >
+                          <input
+                            type="number"
+                            class="form-control form-control-sm"
+                            id="rx_sensitivity"
+                            required
+                            step="0.1"
+                          />
+                          <div class="invalid-feedback">
+                            Please enter a valid sensitivity.
                           </div>
                         </div>
 
-                        <!-- Receiver Column -->
-                        <div class="col-md-6">
-                          <h6 class="text-light">Receiver</h6>
-                          <div class="mb-2">
-                            <label for="rx_gain" class="form-label">Gain (dB)</label>
-                            <input
-                              type="text"
-                              class="form-control form-control-sm"
-                              id="rx_gain"
-                              placeholder=""
-                            />
-                          </div>
-                          <div class="mb-2">
-                            <label for="rx_power" class="form-label">Power (W)</label>
-                            <input
-                              type="text"
-                              class="form-control form-control-sm"
-                              id="rx_power"
-                              placeholder=""
-                            />
+                        <!-- Height Above Ground -->
+                        <div class="col-6">
+                          <label for="rx_height" class="form-label"
+                            >Height AGL (m)</label
+                          >
+                          <input
+                            type="number"
+                            class="form-control form-control-sm"
+                            id="rx_height"
+                            required
+                            min="0"
+                            step="0.1"
+                          />
+                          <div class="invalid-feedback">
+                            Height must be a positive number.
                           </div>
                         </div>
                       </div>
-                      <div class="mt-2">
-                        <button type="button" class="btn btn-success btn-sm">Set Antennas</button>
+
+                      <div class="row g-2 mt-2">
+                        <!-- Antenna Gain -->
+                        <div class="col-6">
+                          <label for="rx_gain" class="form-label"
+                            >Antenna Gain (dB)</label
+                          >
+                          <input
+                            type="number"
+                            class="form-control form-control-sm"
+                            id="rx_gain"
+                            required
+                            min="0"
+                            step="0.1"
+                          />
+                          <div class="invalid-feedback">
+                            Gain must be a positive number.
+                          </div>
+                        </div>
+
+                        <!-- Cable Loss -->
+                        <div class="col-6">
+                          <label for="rx_loss" class="form-label"
+                            >Cable Loss (dB)</label
+                          >
+                          <input
+                            type="number"
+                            class="form-control form-control-sm"
+                            id="rx_loss"
+                            required
+                            min="0"
+                            step="0.1"
+                          />
+                          <div class="invalid-feedback">
+                            Loss must be a positive number.
+                          </div>
+                        </div>
                       </div>
                     </form>
                   </li>
                 </ul>
               </li>
 
-              <!-- Environment Dropdown -->
               <li class="nav-item dropdown">
                 <a
                   class="nav-link dropdown-toggle"
@@ -243,42 +330,377 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-dark p-3">
                   <li>
-                    <form>
-                      <div class="mb-2">
-                        <label for="env_lat" class="form-label">Latitude</label>
-                        <input
-                          type="text"
-                          class="form-control form-control-sm"
-                          id="env_lat"
-                          placeholder=""
-                        />
+                    <form novalidate>
+                      <div class="row g-2">
+
+
+
+                        <!-- Radio Climate -->
+                        <div class="col-6">
+                          <label for="radio_climate" class="form-label"
+                            >Radio Climate</label
+                          >
+                          <select
+                            id="radio_climate"
+                            class="form-select form-select-sm"
+                            required
+                          >
+                            <option value="equatorial">Equatorial</option>
+                            <option value="continental_subtropical">
+                              Continental Subtropical
+                            </option>
+                            <option value="maritime_subtropical">
+                              Maritime Subtropical
+                            </option>
+                            <option value="desert">Desert</option>
+                            <option value="continental_temperate" selected>
+                              Continental Temperate
+                            </option>
+                            <option value="maritime_temperate_land">
+                              Maritime Temperate (Land)
+                            </option>
+                            <option value="maritime_temperate_sea">
+                              Maritime Temperate (Sea)
+                            </option>
+                          </select>
+                          <div class="invalid-feedback">
+                            Please select a radio climate.
+                          </div>
+                        </div>
                       </div>
-                      <div class="mb-2">
-                        <label for="env_lon" class="form-label">Longitude</label>
-                        <input
-                          type="text"
-                          class="form-control form-control-sm"
-                          id="env_lon"
-                          placeholder=""
-                        />
+
+                      <div class="row g-2 mt-2">
+                        <!-- Polarization -->
+                        <div class="col-6">
+                          <label for="polarization" class="form-label"
+                            >Polarization</label
+                          >
+                          <select
+                            id="polarization"
+                            class="form-select form-select-sm"
+                            required
+                          >
+                            <option value="horizontal">Horizontal</option>
+                            <option value="vertical" selected>Vertical</option>
+                          </select>
+                          <div class="invalid-feedback">
+                            Please select a polarization type.
+                          </div>
+                        </div>
+
+                        <!-- Clutter Height -->
+                        <div class="col-6">
+                          <label for="clutter_height" class="form-label"
+                            >Clutter Height (m)</label
+                          >
+                          <input
+                            type="number"
+                            class="form-control form-control-sm"
+                            id="clutter_height"
+                            required
+                            min="0"
+                            step="0.1"
+                            value="0"
+                          />
+                          <div class="invalid-feedback">
+                            Height must be >= 0 (default: 0).
+                          </div>
+                        </div>
                       </div>
-                      <div class="mb-2">
-                        <label for="env_terrain" class="form-label">Terrain Type</label>
-                        <input
-                          type="text"
-                          class="form-control form-control-sm"
-                          id="env_terrain"
-                          placeholder="e.g., Urban"
-                        />
+
+                      <div class="row g-2 mt-2">
+                        <!-- Ground Dielectric -->
+                        <div class="col-6">
+                          <label for="ground_dielectric" class="form-label"
+                            >Ground Dielectric</label
+                          >
+                          <input
+                            type="number"
+                            class="form-control form-control-sm"
+                            id="ground_dielectric"
+                            required
+                            min="1"
+                            step="0.1"
+                            value="15.0"
+                          />
+                          <div class="invalid-feedback">
+                            Dielectric constant must be >= 1 (default: 15.0).
+                          </div>
+                        </div>
+
+                        <!-- Ground Conductivity -->
+                        <div class="col-6">
+                          <label for="ground_conductivity" class="form-label"
+                            >Ground Conductivity</label
+                          >
+                          <input
+                            type="number"
+                            class="form-control form-control-sm"
+                            id="ground_conductivity"
+                            required
+                            min="0"
+                            step="0.001"
+                            value="0.005"
+                          />
+                          <div class="invalid-feedback">
+                            Conductivity must be >= 0 (default: 0.005).
+                          </div>
+                        </div>
                       </div>
-                      <div class="mb-2">
-                        <button type="button" class="btn btn-warning btn-sm">Set Environment</button>
+
+                      <div class="row g-2 mt-2">
+                        <!-- Atmospheric Bending -->
+                        <div class="col-6">
+                          <label for="atmosphere_bending" class="form-label"
+                            >Atmospheric Bending (N-units)</label
+                          >
+                          <input
+                            type="number"
+                            class="form-control form-control-sm"
+                            id="atmosphere_bending"
+                            required
+                            min="0"
+                            step="0.1"
+                            value="301.0"
+                          />
+                          <div class="invalid-feedback">
+                            Bending constant must be >= 0 (default: 301.0).
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </li>
+                </ul>
+              </li>
+
+              <li class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                  data-bs-auto-close="outside"
+                  aria-expanded="false"
+                >
+                  Simulation Options
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark p-3">
+                  <li>
+                    <form novalidate>
+                      <div class="row g-2">
+                        <!-- Situation Fraction -->
+                        <div class="col-6">
+                          <label for="situation_fraction" class="form-label"
+                            >Situation Fraction (%)</label
+                          >
+                          <input
+                            type="number"
+                            class="form-control form-control-sm"
+                            id="situation_fraction"
+                            required
+                            min="1"
+                            max="100"
+                            step="0.1"
+                            value="50"
+                          />
+                          <div class="invalid-feedback">
+                            Percentage must be between 1 and 100 (default: 50).
+                          </div>
+                        </div>
+
+                        <!-- Time Fraction -->
+                        <div class="col-6">
+                          <label for="time_fraction" class="form-label"
+                            >Time Fraction (%)</label
+                          >
+                          <input
+                            type="number"
+                            class="form-control form-control-sm"
+                            id="time_fraction"
+                            required
+                            min="1"
+                            max="100"
+                            step="0.1"
+                            value="90"
+                          />
+                          <div class="invalid-feedback">
+                            Percentage must be between 1 and 100 (default: 90).
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="row g-2 mt-2">
+                        <!-- Simulation Extent -->
+                        <div class="col-6">
+                          <label for="simulation_extent" class="form-label"
+                            >Max Range (km)</label
+                          >
+                          <input
+                            type="number"
+                            class="form-control form-control-sm"
+                            id="simulation_extent"
+                            required
+                            min="1"
+                            step="0.1"
+                            value="100"
+                          />
+                          <div class="invalid-feedback">
+                            Radius must be a positive number (default: 10 km).
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="row mt-3">
+                        <!-- High-Resolution Toggle -->
+                        <div class="col-12">
+                          <label for="high_resolution" class="form-label"
+                            >High-Resolution</label
+                          >
+                          <div class="form-check">
+                            <input
+                              type="checkbox"
+                              class="form-check-input"
+                              id="high_resolution"
+                            />
+                            <label
+                              class="form-check-label"
+                              for="high_resolution"
+                            >
+                              Use 30 meter resolution terrain data (default: 90
+                              meter).
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </li>
+                </ul>
+              </li>
+
+              <li class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                  data-bs-auto-close="outside"
+                  aria-expanded="false"
+                >
+                  Output
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark p-3">
+                  <li>
+                    <form novalidate>
+                      <div class="row g-2">
+                        <!-- Minimum dBm -->
+                        <div class="col-6">
+                          <label for="min_dbm" class="form-label"
+                            >Minimum dBm</label
+                          >
+                          <input
+                            type="number"
+                            class="form-control form-control-sm"
+                            id="min_dbm"
+                            required
+                            step="0.1"
+                            value="-130.0"
+                          />
+                          <div class="invalid-feedback">
+                            Minimum dBm must be provided (default: -130.0).
+                          </div>
+                        </div>
+
+                        <!-- Maximum dBm -->
+                        <div class="col-6">
+                          <label for="max_dbm" class="form-label"
+                            >Maximum dBm</label
+                          >
+                          <input
+                            type="number"
+                            class="form-control form-control-sm"
+                            id="max_dbm"
+                            required
+                            step="0.1"
+                            value="-30.0"
+                          />
+                          <div class="invalid-feedback">
+                            Maximum dBm must be provided (default: -30.0).
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="row g-2 mt-2">
+                        <!-- Color Scale -->
+                        <div class="col-6">
+                          <label for="color_scale" class="form-label"
+                            >Color Scale</label
+                          >
+                          <select
+                            id="color_scale"
+                            class="form-select form-select-sm"
+                            required
+                          >
+                            <option value="rainbow" selected>Rainbow</option>
+                            <option value="viridis">Viridis</option>
+                            <option value="plasma">Plasma</option>
+                            <option value="cividis">Cividis</option>
+                            <option value="jet">Jet</option>
+                          </select>
+                          <div class="invalid-feedback">
+                            Please select a color scale.
+                          </div>
+                        </div>
+
+                        <!-- Overlay Transparency -->
+                        <div class="col-6">
+                          <label for="overlay_transparency" class="form-label"
+                            >Transparency (%)</label
+                          >
+                          <input
+                            type="number"
+                            class="form-control form-control-sm"
+                            id="overlay_transparency"
+                            required
+                            min="0"
+                            max="100"
+                            step="1"
+                            value="50"
+                          />
+                          <div class="invalid-feedback">
+                            Transparency must be between 0 and 100 (default:
+                            50).
+                          </div>
+                        </div>
                       </div>
                     </form>
                   </li>
                 </ul>
               </li>
             </ul>
+            <!-- Run Simulation and Download Results Buttons -->
+            <div class="mt-3 d-flex gap-2">
+              <button
+                type="button"
+                class="btn btn-success btn-sm"
+                id="runSimulation"
+              >
+                Run Simulation
+              </button>
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm"
+                id="downloadKML"
+              >
+                Download KML
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm btn-secondary"
+                id="saveScenario"
+              >
+                Save Scenario
+              </button>
+            </div>
           </div>
         </div>
       </div>

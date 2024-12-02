@@ -111,8 +111,6 @@ async def get_result(task_id: str):
     if status == b"completed":
         # Get the GeoTIFF binary data
         geotiff_data = redis_client.get(task_id)
-
-        # Create an in-memory file object
         geotiff_file = io.BytesIO(geotiff_data)
 
         # Return the GeoTIFF as a streaming response
