@@ -31,6 +31,17 @@ splat_service = Splat(splat_path="/Users/patrick/Dev/splat")
 # Initialize FastAPI app
 app = FastAPI()
 
+from fastapi.middleware.cors import CORSMiddleware
+
+# Add CORS middleware to allow requests from your frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Replace '*' with specific origins like ["http://localhost:3000"] for security
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
+)
+
 def run_splat(task_id: str, request: CoveragePredictionRequest):
     """
     Execute the SPLAT! coverage prediction and store the resulting GeoTIFF data in Redis.

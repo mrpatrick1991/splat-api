@@ -249,7 +249,10 @@
                             class="form-control form-control-sm"
                             id="rx_sensitivity"
                             required
-                            step="0.1"
+                            step="1"
+                            min="-150"
+                            max="80"
+                            value="-120"
                           />
                           <div class="invalid-feedback">
                             Please enter a valid sensitivity.
@@ -268,6 +271,7 @@
                             required
                             min="0"
                             step="0.1"
+                            value="1.0"
                           />
                           <div class="invalid-feedback">
                             Height must be a positive number.
@@ -287,7 +291,9 @@
                             id="rx_gain"
                             required
                             min="0"
+                            max="30"
                             step="0.1"
+                            value="2.0"
                           />
                           <div class="invalid-feedback">
                             Gain must be a positive number.
@@ -305,7 +311,9 @@
                             id="rx_loss"
                             required
                             min="0"
+                            max="100"
                             step="0.1"
+                            value="2.0"
                           />
                           <div class="invalid-feedback">
                             Loss must be a positive number.
@@ -332,9 +340,6 @@
                   <li>
                     <form novalidate>
                       <div class="row g-2">
-
-
-
                         <!-- Radio Climate -->
                         <div class="col-6">
                           <label for="radio_climate" class="form-label"
@@ -367,9 +372,7 @@
                             Please select a radio climate.
                           </div>
                         </div>
-                      </div>
 
-                      <div class="row g-2 mt-2">
                         <!-- Polarization -->
                         <div class="col-6">
                           <label for="polarization" class="form-label"
@@ -391,7 +394,8 @@
                         <!-- Clutter Height -->
                         <div class="col-6">
                           <label for="clutter_height" class="form-label"
-                            >Clutter Height (m)</label
+                            >Clutter Height <br />
+                            (m)</label
                           >
                           <input
                             type="number"
@@ -406,13 +410,11 @@
                             Height must be >= 0 (default: 0).
                           </div>
                         </div>
-                      </div>
 
-                      <div class="row g-2 mt-2">
                         <!-- Ground Dielectric -->
                         <div class="col-6">
                           <label for="ground_dielectric" class="form-label"
-                            >Ground Dielectric</label
+                            >Ground Dielectric (V/m)</label
                           >
                           <input
                             type="number"
@@ -431,7 +433,7 @@
                         <!-- Ground Conductivity -->
                         <div class="col-6">
                           <label for="ground_conductivity" class="form-label"
-                            >Ground Conductivity</label
+                            >Ground Conductivity (S/m)</label
                           >
                           <input
                             type="number"
@@ -446,9 +448,7 @@
                             Conductivity must be >= 0 (default: 0.005).
                           </div>
                         </div>
-                      </div>
 
-                      <div class="row g-2 mt-2">
                         <!-- Atmospheric Bending -->
                         <div class="col-6">
                           <label for="atmosphere_bending" class="form-label"
@@ -692,13 +692,6 @@
                 id="downloadKML"
               >
                 Download KML
-              </button>
-              <button
-                type="button"
-                class="btn btn-sm btn-secondary"
-                id="saveScenario"
-              >
-                Save Scenario
               </button>
             </div>
           </div>
