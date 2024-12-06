@@ -519,6 +519,10 @@ class Splat:
 
             logger.debug(f"PPM image dimensions: {img_array.shape}")
 
+            # Mask null values
+            img_array = np.where(img_array == null_value, 255, img_array)  # Optionally set to 0
+            no_data_value = null_value
+
             # Create GeoTIFF using Rasterio
             height, width = img_array.shape
             transform = from_bounds(west, south, east, north, width, height)
@@ -533,8 +537,7 @@ class Splat:
             rgb_colors = (cmap(cmap_norm(cmap_values))[:, :3] * 255).astype(int)
 
             # Initialize GDAL-compatible colormap with transparency for null values
-            gdal_colormap = {i: tuple(rgb) + (255,) for i, rgb in enumerate(rgb_colors)}  # Normal colors
-            #gdal_colormap[null_value] = (0, 0, 0, 0)  # transparent for null areas transparent for null areas
+            gdal_colormap = {i: tuple(rgb) + (255,) for i, rgb in enumerate(rgb_colors)}
 
             # Write GeoTIFF to memory
             with io.BytesIO() as buffer:
@@ -550,6 +553,7 @@ class Splat:
                         transform=transform,
                         photometric="palette",  # Colormap interpretation
                         compress="lzw",
+                        nodata=no_data_value,  # Set NoData value
                 ) as dst:
                     dst.write(img_array, 1)  # Write the raster data
                     dst.write_colormap(1, gdal_colormap)  # Attach the colormap

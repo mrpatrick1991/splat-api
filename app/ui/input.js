@@ -140,11 +140,6 @@ document.getElementById("runSimulation").addEventListener("click", async () => {
         // Use georaster-layer-for-leaflet to display the GeoTIFF
         const georaster = await parseGeoraster(arrayBuffer);
 
-        const layer = new GeoRasterLayer({
-          georaster: georaster,
-          opacity: 0.7,
-          resolution: 128
-        });
         // Remove the layer if it exists
         if (currentLayer) {
           map.removeLayer(currentLayer);
@@ -154,10 +149,9 @@ document.getElementById("runSimulation").addEventListener("click", async () => {
         currentLayer = new GeoRasterLayer({
           georaster: georaster,
           opacity: 0.7,
-          noDataValue: 255
+          noDataValue: 255,
         });
         currentLayer.addTo(map);
-        map.fitBounds(currentLayer.getBounds());
       } else if (statusData.status === "failed") {
       } else {
         setTimeout(pollStatus, pollInterval); // Retry after interval

@@ -544,10 +544,10 @@
                             required
                             min="1"
                             step="0.1"
-                            value="50"
+                            value="10"
                           />
                           <div class="invalid-feedback">
-                            Radius must be a positive number (default: 50 km).
+                            Radius must be a positive number (default: 10 km).
                           </div>
                         </div>
                       </div>
@@ -643,12 +643,13 @@
                             required
                           >
                             <option value="plasma" selected>Plasma</option>
+                            <option value="CMRmap">CMR map</option>
+                            <option value="cool">Cool</option>
                             <option value="rainbow">Rainbow</option>
                             <option value="viridis">Viridis</option>
+                            <option value="turbo">Turbo</option>
                             <option value="cividis">Cividis</option>
                             <option value="jet">Jet</option>
-                            <option value="turbo">Turbo</option>
-
                           </select>
                           <div class="invalid-feedback">
                             Please select a color scale.
