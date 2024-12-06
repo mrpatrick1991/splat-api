@@ -23,6 +23,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.82.0/dist/L.Control.Locate.min.js"></script>
+    <script src="https://unpkg.com/georaster"></script>
+    <script src="https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js"></script>
   </head>
 
   <body>
@@ -133,7 +135,7 @@
                             step="0.1"
                             data-bs-toggle="tooltip"
                             title="Transmitter power in watts (>0)."
-                            value="50.0"
+                            value="0.1"
                           />
                           <div class="invalid-feedback">
                             Power must be a positive number.
@@ -153,7 +155,7 @@
                             step="0.1"
                             data-bs-toggle="tooltip"
                             title="Transmitter frequency in MHz (20 to 20,000)."
-                            value="144.390"
+                            value="905.0"
                           />
                           <div class="invalid-feedback">
                             Frequency must be a positive number.
@@ -176,7 +178,7 @@
                             step="0.1"
                             data-bs-toggle="tooltip"
                             title="Transmitter height above ground in meters (>= 1.0)."
-                            value="5.0"
+                            value="1.0"
                           />
                           <div class="invalid-feedback">
                             Height must be a positive number.
@@ -193,7 +195,7 @@
                             required
                             min="0"
                             step="0.1"
-                            value="4.0"
+                            value="2.0"
                           />
                           <div class="invalid-feedback">
                             Gain must be a positive number.
@@ -251,8 +253,8 @@
                             required
                             step="1"
                             min="-150"
-                            max="80"
-                            value="-120"
+                            max="-30"
+                            value="-130"
                           />
                           <div class="invalid-feedback">
                             Please enter a valid sensitivity.
@@ -501,7 +503,7 @@
                             min="1"
                             max="100"
                             step="0.1"
-                            value="50"
+                            value="90"
                           />
                           <div class="invalid-feedback">
                             Percentage must be between 1 and 100 (default: 50).
@@ -542,10 +544,10 @@
                             required
                             min="1"
                             step="0.1"
-                            value="100"
+                            value="50"
                           />
                           <div class="invalid-feedback">
-                            Radius must be a positive number (default: 10 km).
+                            Radius must be a positive number (default: 50 km).
                           </div>
                         </div>
                       </div>
@@ -621,7 +623,7 @@
                             id="max_dbm"
                             required
                             step="0.1"
-                            value="-30.0"
+                            value="-80.0"
                           />
                           <div class="invalid-feedback">
                             Maximum dBm must be provided (default: -30.0).
@@ -640,11 +642,13 @@
                             class="form-select form-select-sm"
                             required
                           >
-                            <option value="rainbow" selected>Rainbow</option>
+                            <option value="plasma" selected>Plasma</option>
+                            <option value="rainbow">Rainbow</option>
                             <option value="viridis">Viridis</option>
-                            <option value="plasma">Plasma</option>
                             <option value="cividis">Cividis</option>
                             <option value="jet">Jet</option>
+                            <option value="turbo">Turbo</option>
+
                           </select>
                           <div class="invalid-feedback">
                             Please select a color scale.

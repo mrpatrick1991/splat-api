@@ -472,12 +472,10 @@ class Splat:
             colormap_name: str,
             min_dbm: float,
             max_dbm: float,
+            null_value: int = 255  # Define the null value for transparency
     ) -> bytes:
         """
-        Generate GeoTIFF file content from SPLAT! PPM and KML data.
-
-        This method converts a SPLAT! PPM image (provided as bytes) and its corresponding KML
-        geospatial metadata (also provided as bytes) into a GeoTIFF with a color table.
+        Generate GeoTIFF file content from SPLAT! PPM and KML data, with transparency for null areas.
 
         Args:
             ppm_bytes (bytes): Binary content of the SPLAT-generated PPM file.
@@ -485,6 +483,7 @@ class Splat:
             colormap_name (str): Name of the matplotlib colormap to use for the GeoTIFF.
             min_dbm (float): Minimum dBm value for the colormap scale.
             max_dbm (float): Maximum dBm value for the colormap scale.
+            null_value (int): Pixel value in the PPM that represents null areas. Defaults to 255.
 
         Returns:
             bytes: The binary content of the resulting GeoTIFF file.
@@ -533,9 +532,9 @@ class Splat:
             # Map data values to RGB for visible colors
             rgb_colors = (cmap(cmap_norm(cmap_values))[:, :3] * 255).astype(int)
 
-            # Initialize GDAL-compatible colormap with transparency for the background
+            # Initialize GDAL-compatible colormap with transparency for null values
             gdal_colormap = {i: tuple(rgb) + (255,) for i, rgb in enumerate(rgb_colors)}  # Normal colors
-            gdal_colormap[255] = (255, 255, 255, 0)  # Fully transparent background
+            #gdal_colormap[null_value] = (0, 0, 0, 0)  # transparent for null areas transparent for null areas
 
             # Write GeoTIFF to memory
             with io.BytesIO() as buffer:
