@@ -16,8 +16,8 @@ from fastapi import FastAPI, BackgroundTasks
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from uuid import uuid4
-from app.services.splat import Splat
-from app.models.CoveragePredictionRequest import CoveragePredictionRequest
+from meshtastic_link_planner.services.splat import Splat
+from meshtastic_link_planner.models.CoveragePredictionRequest import CoveragePredictionRequest
 import logging
 import io
 
