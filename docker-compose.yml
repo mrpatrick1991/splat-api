@@ -1,0 +1,31 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - HOME=/root
+      - TERM=xterm
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    working_dir: "/app"
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
+
+  static:
+    image: nginx:latest
+    container_name: static
+    ports:
+      - "80:80"
+    volumes:
+      - ./app/ui:/usr/share/nginx/html:ro
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server"]

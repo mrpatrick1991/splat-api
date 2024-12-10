@@ -468,6 +468,22 @@ class Splat:
             raise ValueError(f"Failed to generate .dcf content: {e}")
 
     @staticmethod
+    def create_splat_colorbar(
+        colormap_name: str,
+        min_dbm: float,
+        max_dbm: float,
+    ) -> list:
+        """Generate a list of RGB color values corresponding to the color map, min and max RSSI values in dBm."""
+        cmap = plt.get_cmap(colormap_name, 256)  # colormap with 256 levels
+        cmap_norm = plt.Normalize(vmin=min_dbm, vmax=max_dbm)  # Normalize based on dBm range
+        cmap_values = np.linspace(min_dbm, max_dbm, 255)
+
+        # Map data values to RGB for visible colors
+        rgb_colors = list(cmap(cmap_norm(cmap_values))[:, :3] * 255).astype(int)
+        return rgb_colors
+
+
+    @staticmethod
     def _create_splat_geotiff(
             ppm_bytes: bytes,
             kml_bytes: bytes,
@@ -531,7 +547,7 @@ class Splat:
             logger.debug(f"GeoTIFF transform matrix: {transform}")
 
             # Generate colormap with transparency
-            cmap = plt.get_cmap(colormap_name, 256)  # Viridis colormap with 256 levels
+            cmap = plt.get_cmap(colormap_name, 256)  # colormap with 256 levels
             cmap_norm = plt.Normalize(vmin=min_dbm, vmax=max_dbm)  # Normalize based on dBm range
             cmap_values = np.linspace(min_dbm, max_dbm, 255)
 
@@ -732,7 +748,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     try:
         splat_service = Splat(
-            splat_path="/Users/patrick/Dev/splat",  # Replace with the actual SPLAT! binary path
+            splat_path="splat",  # Replace with the actual SPLAT! binary path
         )
 
         # Create a test coverage prediction request

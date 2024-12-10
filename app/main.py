@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 redis_client = redis.StrictRedis(host="localhost", port=6379, decode_responses=False)
 
 # Initialize SPLAT service
-splat_service = Splat(splat_path="/Users/patrick/Dev/splat")
+splat_service = Splat(splat_path="/app")
 
 # Initialize FastAPI app
 app = FastAPI()
