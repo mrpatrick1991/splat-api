@@ -1,4 +1,5 @@
 const { defineStore } = Pinia
+const { useLocalStorage } = VueUse
 
 const useStore = defineStore('store', {
   state() {
@@ -7,6 +8,7 @@ const useStore = defineStore('store', {
         zoomControl: false, // Disable the default zoom control
       }),
       currentLayer: null,
+      layers: useLocalStorage('layers', []),
       transmitter: {
         tx_lat: 51.102167,
         tx_lon: -114.098667,
@@ -40,7 +42,7 @@ const useStore = defineStore('store', {
         min_dbm: -130.0,
         max_dbm: -80.0,
         overlay_transparency: 50
-      }
+      },
     }
   },
   actions: {
