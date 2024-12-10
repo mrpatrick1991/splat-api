@@ -66,10 +66,10 @@
                   </ul>
                 </li>
                 <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">Output</a>
+                  <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">Display</a>
                   <ul class="dropdown-menu dropdown-menu-dark p-3">
                     <li>
-                      <Output />
+                      <Display />
                     </li>
                   </ul>
                 </li>
@@ -98,7 +98,7 @@
     import Receiver from './receiver.js'
     import Environment from './environment.js'
     import Simulation from './simulation.js'
-    import Output from './output.js'
+    import Display from './display.js'
     import { useStore } from './store.js'
 
     const pinia = createPinia()
@@ -117,7 +117,7 @@
         Receiver,
         Environment,
         Simulation,
-        Output
+        Display
       }
     });
     app.use(pinia);
