@@ -24,7 +24,7 @@ const useStore = defineStore('store', {
       environment: {
         radio_climate: 'continental_temperate',
         polarization: 'vertical',
-        clutter_height: 0.0,
+        clutter_height: 1.0,
         ground_dielectric: 15.0,
         ground_conductivity: 0.005,
         atmosphere_bending: 301.0
@@ -91,7 +91,7 @@ const useStore = defineStore('store', {
 
           // Simulation parameters
           radius: this.simulation.simulation_extent * 1000,
-          system_loss: 0.0,
+          system_loss: this.receiver.rx_loss,
           situation_fraction: this.simulation.situation_fraction,
           time_fraction: this.simulation.time_fraction,
           high_resolution: this.simulation.high_resolution,
@@ -122,7 +122,18 @@ const useStore = defineStore('store', {
         const taskId = predictData.task_id;
     
         console.log(`Prediction started with task ID: ${taskId}`);
-    
+
+        // display spinner to show task is running
+
+        const runButton = document.getElementById("runSimulation");
+        const spinner = runButton.querySelector(".spinner-border");
+        const buttonText = runButton.querySelector(".button-text");
+
+        // Show spinner and update text
+        spinner.style.display = "inline-block";
+        buttonText.textContent = "Running...";
+        runButton.disabled = true; // Disable the button
+
         // Poll for task status and result
         const pollInterval = 1000; // 1 seconds
         const pollStatus = async () => {
@@ -138,7 +149,11 @@ const useStore = defineStore('store', {
     
           if (statusData.status === "completed") {
             console.log("Simulation completed! Adding result to the map...");
-    
+
+        spinner.style.display = "none";
+        buttonText.textContent = "Run Simulation";
+        runButton.disabled = false; // Re-enable the button
+
             // Fetch the GeoTIFF data
             const resultResponse = await fetch(
               `http://localhost:8000/result/${taskId}`,
@@ -163,6 +178,8 @@ const useStore = defineStore('store', {
           } 
           else if (statusData.status === "failed") {
             console.error("Simulation failed!");
+            spinner.style.display = "none"; // Hide spinner
+            runButton.disabled = false; // Re-enable the button
           } else {
             setTimeout(pollStatus, pollInterval); // Retry after interval
           }

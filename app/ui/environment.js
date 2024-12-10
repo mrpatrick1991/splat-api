@@ -15,7 +15,7 @@ export default {
                         <option value="continental_subtropical">Continental Subtropical</option>
                         <option value="maritime_subtropical">Maritime Subtropical</option>
                         <option value="desert">Desert</option>
-                        <option selected>Continental Temperate</option>
+                        <option value="continental_temperate">Continental Temperate</option>
                         <option value="maritime_temperate_land">Maritime Temperate (Land)</option>
                         <option value="maritime_temperate_sea">Maritime Temperate (Sea)</option>
                     </select>
@@ -25,14 +25,14 @@ export default {
                     <label for="polarization" class="form-label">Polarization</label>
                     <select v-model="environment.polarization" id="polarization" class="form-select form-select-sm" required>
                     <option value="horizontal">Horizontal</option>
-                    <option selected>Vertical</option>
+                    <option value="vertical">Vertical</option>
                     </select>
                     <div class="invalid-feedback">Please select a polarization type.</div>
                 </div>
                 <div class="col-6">
                     <label for="clutter_height" class="form-label">Clutter Height <br />(m)</label>
                     <input v-model="environment.clutter_height" type="number" class="form-control form-control-sm" id="clutter_height" required min="0" step="0.1" />
-                    <div class="invalid-feedback">Height must be >= 0 (default: 0).</div>
+                    <div class="invalid-feedback">Height must be >= 0 (default: 1.0).</div>
                 </div>
                 <div class="col-6">
                     <label for="ground_dielectric" class="form-label">Ground Dielectric (V/m)</label>

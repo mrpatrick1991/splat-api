@@ -191,6 +191,8 @@ class Splat:
                     "-R",
                     str(request.radius / 1000.0),
                     "-sc",
+                    "-gc",
+                    str(request.clutter_height),
                     "-ngs",
                     "-N",
                     "-o",

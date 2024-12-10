@@ -14,3 +14,7 @@ body {
 .leaflet-top {
   top: 70px; /* Adjust this value to the height of your navbar */
 }
+
+.spinner-border-sm {
+    margin-right: 0.5rem; /* Optional: Add spacing between spinner and text */
+}
