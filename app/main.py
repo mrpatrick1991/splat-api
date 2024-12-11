@@ -5,7 +5,6 @@ Provides endpoints to predict radio signal coverage
 using the ITM (Irregular Terrain Model) via SPLAT! (https://github.com/jmcmellen/splat).
 
 Endpoints:
-    - /: landing page.
     - /predict: Accepts a signal coverage prediction request and starts a background task.
     - /status/{task_id}: Retrieves the status of a given prediction task.
     - /result/{task_id}: Retrieves the result (GeoTIFF file) of a given prediction task.
