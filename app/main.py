@@ -11,24 +11,26 @@ Endpoints:
 """
 
 import redis
+import matplotlib.pyplot as plt
+import numpy as np
 from fastapi import FastAPI, BackgroundTasks
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from uuid import uuid4
 from app.services.splat import Splat
 from app.models.CoveragePredictionRequest import CoveragePredictionRequest
+from app.models.ColorbarRequest import ColorbarRequest
 import logging
 import io
-import os
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Initialize Redis client for binary data
-redis_client = redis.StrictRedis(host="localhost", port=6379, decode_responses=False)
+redis_client = redis.StrictRedis(host="127.0.0.1", port=6379, decode_responses=False)
 
 # Initialize SPLAT service
-splat_service = Splat(splat_path="/app/splat")
+splat_service = Splat(splat_path="/Users/patrick/Dev/splat")
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -36,7 +38,7 @@ app = FastAPI()
 # Add CORS middleware to allow requests from your frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Replace '*' with specific origins like ["http://localhost:3000"] for security
+    allow_origins=["http://127.0.0.1", "http://localhost"],
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods
     allow_headers=["*"],  # Allow all headers
@@ -158,3 +160,36 @@ async def get_result(task_id: str):
 
     logger.info(f"Task {task_id} is still processing.")
     return JSONResponse({"status": "processing"})
+
+
+@app.post("/colorbar")
+async def get_colorbar(payload: ColorbarRequest):
+    """
+    Generate a colorbar based on the provided colormap, min_dbm, and max_dbm.
+
+    Args:
+        payload (ColorbarRequest): Contains colormap name, min_dbm, and max_dbm.
+
+    Returns:
+        JSONResponse: A list of RGB values representing the colorbar.
+    """
+    try:
+        # Create a colormap with 256 levels
+        cmap = plt.get_cmap(payload.colormap_name, 256)
+
+        # Normalize values between min_dbm and max_dbm
+        cmap_norm = plt.Normalize(vmin=payload.min_dbm, vmax=payload.max_dbm)
+        # Generate evenly spaced values in the range
+        cmap_values = np.linspace(payload.min_dbm, payload.max_dbm, 256)
+
+        # Map data values to RGB values and scale to 0-255
+        rgba_colors = cmap(cmap_norm(cmap_values))  # RGBA values
+        rgb_colors = (rgba_colors[:, :3] * 255).astype(int)  # Convert to RGB and scale
+
+        # Convert to a list of RGB tuples
+        rgb_color_list = [tuple(map(int, color)) for color in rgb_colors]
+
+        return JSONResponse({"colorbar": rgb_color_list})
+    except Exception as e:
+        logger.error(f"Failed to generate colorbar: {e}")
+        return JSONResponse({"error": str(e)}, status_code=500)

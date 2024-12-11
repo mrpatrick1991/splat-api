@@ -89,7 +89,7 @@ class CoveragePredictionRequest(BaseModel):
 
     # Output Settings
     colormap: Literal[tuple(AVAILABLE_COLORMAPS)] = Field(
-        "rainbow",
+        "plasma",
         description=f"Matplotlib colormap to use. Available options: {', '.join(AVAILABLE_COLORMAPS)}",
     )
     min_dbm: float = Field(

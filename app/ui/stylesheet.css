@@ -18,3 +18,19 @@ body {
 .spinner-border-sm {
     margin-right: 0.5rem; /* Optional: Add spacing between spinner and text */
 }
+
+#colorbar-container {
+    width: 256px;
+    margin: 10px auto; /* Center the colorbar horizontally */
+}
+
+#colorbar {
+    border: 1px solid #ccc;
+    display: block;
+    margin: 0 auto; /* Center the canvas */
+}
+
+#colorbar-labels {
+    font-size: 14px;
+    color: #333;
+}
