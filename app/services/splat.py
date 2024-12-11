@@ -1,4 +1,5 @@
 import gzip
+import zipfile
 import logging
 import math
 import os
@@ -21,7 +22,8 @@ from rasterio.transform import from_bounds
 from PIL import Image
 
 from app.models.CoveragePredictionRequest import CoveragePredictionRequest
-
+from rasterio.plot import reshape_as_image
+from PIL import Image
 
 logger = logging.getLogger(__name__)
 logging.getLogger("boto3").setLevel(logging.WARNING)
@@ -236,6 +238,84 @@ class Splat:
             except Exception as e:
                 logger.error(f"Error during coverage prediction: {e}")
                 raise RuntimeError(f"Error during coverage prediction: {e}")
+
+    @staticmethod
+    def geotiff_to_kml_zip(geotiff_data: bytes) -> bytes:
+        """
+        Convert GeoTIFF data into a KMZ file containing a KML with a GroundOverlay element and a PNG of the GeoTIFF.
+
+        Args:
+            geotiff_data (bytes): The binary content of the GeoTIFF file.
+
+        Returns:
+            bytes: The binary content of the resulting KMZ file.
+        """
+        try:
+            # Create a temporary directory to organize files
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                # Save the GeoTIFF data to a temporary file
+                geotiff_path = os.path.join(tmp_dir, "embedded_geotiff.tif")
+                with open(geotiff_path, "wb") as geotiff_file:
+                    geotiff_file.write(geotiff_data)
+
+                # Open the GeoTIFF and convert it to a PNG
+                png_path = os.path.join(tmp_dir, "overlay_image.png")
+                with rasterio.open(geotiff_path) as src:
+                    # Ensure the CRS is EPSG:4326 for KML compatibility
+                    if src.crs.to_string() != "EPSG:4326":
+                        raise ValueError("GeoTIFF CRS must be EPSG:4326 (WGS84) for KML compatibility.")
+
+                    # Get bounds and transform to lat/lon
+                    bounds = src.bounds
+                    north, south, east, west = bounds.top, bounds.bottom, bounds.right, bounds.left
+
+                    # Read data and normalize for RGB image
+                    data = src.read()
+                    if data.shape[0] > 3:
+                        data = data[:3]  # Keep only the first three bands if more exist
+                    img = reshape_as_image(data)
+                    img = np.clip((img / img.max()) * 255, 0, 255).astype(np.uint8)
+
+                    # Save the PNG
+                    Image.fromarray(img).save(png_path)
+
+                # Construct KML content
+                kml_content = f"""<?xml version="1.0" encoding="UTF-8"?>
+                <kml xmlns="http://www.opengis.net/kml/2.2">
+                  <GroundOverlay>
+                    <name>Signal Coverage</name>
+                    <Icon>
+                      <href>overlay_image.png</href>
+                    </Icon>
+                    <LatLonBox>
+                      <north>{north}</north>
+                      <south>{south}</south>
+                      <east>{east}</east>
+                      <west>{west}</west>
+                    </LatLonBox>
+                  </GroundOverlay>
+                </kml>
+                """
+
+                # Save the KML content to a temporary file
+                kml_path = os.path.join(tmp_dir, "doc.kml")
+                with open(kml_path, "w", encoding="utf-8") as kml_file:
+                    kml_file.write(kml_content)
+
+                # Create a KMZ file (ZIP containing the KML and PNG)
+                kmz_path = os.path.join(tmp_dir, "output.kmz")
+                with zipfile.ZipFile(kmz_path, "w", zipfile.ZIP_DEFLATED) as kmz:
+                    kmz.write(kml_path, arcname="doc.kml")
+                    kmz.write(png_path, arcname="overlay_image.png")
+
+                # Read the KMZ file into memory and return as bytes
+                with open(kmz_path, "rb") as kmz_file:
+                    return kmz_file.read()
+
+        except Exception as e:
+            logger.error(f"Error during KMZ generation: {e}")
+            raise RuntimeError(f"Failed to create KMZ: {e}")
+
 
     @staticmethod
     def _calculate_required_terrain_tiles(
@@ -732,7 +812,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     try:
         splat_service = Splat(
-            splat_path="splat",  # Replace with the actual SPLAT! binary path
+            splat_path="/Users/patrick/Dev/splat",  # Replace with the actual SPLAT! binary path
         )
 
         # Create a test coverage prediction request
@@ -764,11 +844,17 @@ if __name__ == "__main__":
         logger.info("Starting SPLAT! coverage prediction...")
         result = splat_service.coverage_prediction(test_coverage_request)
 
-        # Save GeoTIFF output for inspection
+        # Save GeoTIFF output
         output_path = "splat_output.tif"
         with open(output_path, "wb") as output_file:
             output_file.write(result)
         logger.info(f"GeoTIFF saved to: {output_path}")
+
+        # Save KMZ output
+        output_path = "splat_output.kmz"
+        with open(output_path, "wb") as output_file:
+            output_file.write(splat_service.geotiff_to_kml_zip(result))
+        logger.info(f"KMZ saved to: {output_path}")
 
     except Exception as e:
         logger.error(f"Error during SPLAT! test: {e}")

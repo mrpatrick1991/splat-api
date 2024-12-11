@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+                    <kml xmlns="http://www.opengis.net/kml/2.2">
+                      <GroundOverlay>
+                        <name>Signal Coverage</name>
+                        <Icon>
+                          <href>embedded_geotiff.tif</href>
+                        </Icon>
+                        <LatLonBox>
+                          <north>51.99917</north>
+                          <south>50.0</south>
+                          <east>-113.00083</east>
+                          <west>-116.0</west>
+                        </LatLonBox>
+                      </GroundOverlay>
+                    </kml>
+                    
