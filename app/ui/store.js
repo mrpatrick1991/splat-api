@@ -9,46 +9,48 @@ const useStore = defineStore('store', {
       }),
       currentLayer: null,
       layers: useLocalStorage('layers', []),
-      transmitter: {
-        tx_lat: 51.102167,
-        tx_lon: -114.098667,
-        tx_power: 0.1,
-        tx_freq: 905.0,
-        tx_height: 1.0,
-        tx_gain: 2.0
-      },
-      receiver: {
-        rx_sensitivity: -130.0,
-        rx_height: 1.0,
-        rx_gain: 2.0,
-        rx_loss: 2.0
-      },
-      environment: {
-        radio_climate: 'continental_temperate',
-        polarization: 'vertical',
-        clutter_height: 1.0,
-        ground_dielectric: 15.0,
-        ground_conductivity: 0.005,
-        atmosphere_bending: 301.0
-      },
-      simulation: {
-        situation_fraction: 90.0,
-        time_fraction: 90.0,
-        simulation_extent: 10.0,
-        high_resolution: false
-      },
-      output: {
-        color_scale: 'plasma',
-        min_dbm: -130.0,
-        max_dbm: -80.0,
-        overlay_transparency: 50
-      },
+      splatParams: {
+        transmitter: {
+          tx_lat: 51.102167,
+          tx_lon: -114.098667,
+          tx_power: 0.1,
+          tx_freq: 905.0,
+          tx_height: 1.0,
+          tx_gain: 2.0
+        },
+        receiver: {
+          rx_sensitivity: -130.0,
+          rx_height: 1.0,
+          rx_gain: 2.0,
+          rx_loss: 2.0
+        },
+        environment: {
+          radio_climate: 'continental_temperate',
+          polarization: 'vertical',
+          clutter_height: 1.0,
+          ground_dielectric: 15.0,
+          ground_conductivity: 0.005,
+          atmosphere_bending: 301.0
+        },
+        simulation: {
+          situation_fraction: 90.0,
+          time_fraction: 90.0,
+          simulation_extent: 10.0,
+          high_resolution: false
+        },
+        display: {
+          color_scale: 'plasma',
+          min_dbm: -130.0,
+          max_dbm: -80.0,
+          overlay_transparency: 50
+        },
+      }
     }
   },
   actions: {
     setTxCoords(lat, lon) {
-      this.transmitter.tx_lat = lat
-      this.transmitter.tx_lon = lon
+      this.splatParams.transmitter.tx_lat = lat
+      this.splatParams.transmitter.tx_lon = lon
     },
     initMap() {      
       this.map.setView([51.102167, -114.098667], 10);
@@ -71,37 +73,37 @@ const useStore = defineStore('store', {
         // Collect input values
         const payload = {
           // Transmitter parameters
-          lat: this.transmitter.tx_lat,
-          lon: this.transmitter.tx_lon,
-          tx_height: this.transmitter.tx_height,
-          tx_power: 10 * Math.log10(this.transmitter.tx_power) + 30,
-          tx_gain: this.transmitter.tx_gain,
-          frequency_mhz: this.transmitter.tx_freq,
+          lat: this.splatParams.transmitter.tx_lat,
+          lon: this.splatParams.transmitter.tx_lon,
+          tx_height: this.splatParams.transmitter.tx_height,
+          tx_power: 10 * Math.log10(this.splatParams.transmitter.tx_power) + 30,
+          tx_gain: this.splatParams.transmitter.tx_gain,
+          frequency_mhz: this.splatParams.transmitter.tx_freq,
 
           // Receiver parameters
-          rx_height: this.receiver.rx_height,
-          rx_gain: this.receiver.rx_gain,
-          signal_threshold: this.receiver.rx_sensitivity,
+          rx_height: this.splatParams.receiver.rx_height,
+          rx_gain: this.splatParams.receiver.rx_gain,
+          signal_threshold: this.splatParams.receiver.rx_sensitivity,
+          system_loss: this.splatParams.receiver.rx_loss,
 
           // Environment parameters
-          clutter_height: this.environment.clutter_height,
-          ground_dielectric: this.environment.ground_dielectric,
-          ground_conductivity: this.environment.ground_conductivity,
-          atmosphere_bending: this.environment.atmosphere_bending,
-          radio_climate: this.environment.radio_climate,
-          polarization: this.environment.polarization,
+          clutter_height: this.splatParams.environment.clutter_height,
+          ground_dielectric: this.splatParams.environment.ground_dielectric,
+          ground_conductivity: this.splatParams.environment.ground_conductivity,
+          atmosphere_bending: this.splatParams.environment.atmosphere_bending,
+          radio_climate: this.splatParams.environment.radio_climate,
+          polarization: this.splatParams.environment.polarization,
 
           // Simulation parameters
-          radius: this.simulation.simulation_extent * 1000,
-          system_loss: this.receiver.rx_loss,
-          situation_fraction: this.simulation.situation_fraction,
-          time_fraction: this.simulation.time_fraction,
-          high_resolution: this.simulation.high_resolution,
+          radius: this.splatParams.simulation.simulation_extent * 1000,
+          situation_fraction: this.splatParams.simulation.situation_fraction,
+          time_fraction: this.splatParams.simulation.time_fraction,
+          high_resolution: this.splatParams.simulation.high_resolution,
 
-          // Output parameters
-          colormap: this.output.color_scale,
-          min_dbm: this.output.min_dbm,
-          max_dbm: this.output.max_dbm,
+          // Display parameters
+          colormap: this.splatParams.display.color_scale,
+          min_dbm: this.splatParams.display.min_dbm,
+          max_dbm: this.splatParams.display.max_dbm,
         };
     
         console.log("Payload:", payload);

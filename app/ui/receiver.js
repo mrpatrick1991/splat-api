@@ -2,7 +2,7 @@ import { useStore } from './store.js'
 
 export default {
     setup() {
-        const receiver = useStore().receiver
+        const receiver = useStore().splatParams.receiver
         return { receiver }
     },
     template: `
