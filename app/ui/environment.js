@@ -2,7 +2,7 @@ import { useStore } from './store.js'
 
 export default {
     setup() {
-        const environment = useStore().environment
+        const environment = useStore().splatParams.environment
         return { environment }
     },
     template: `

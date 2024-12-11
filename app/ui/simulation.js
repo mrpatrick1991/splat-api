@@ -2,7 +2,7 @@ import { useStore } from './store.js'
 
 export default {
     setup() {
-        const simulation = useStore().simulation
+        const simulation = useStore().splatParams.simulation
         return { simulation }
     },
     template: `

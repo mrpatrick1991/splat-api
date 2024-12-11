@@ -4,7 +4,7 @@ const { onMounted } = Vue;
 export default {
     setup() {
         const store = useStore();
-        const transmitter = store.transmitter;
+        const transmitter = store.splatParams.transmitter;
 
         const centerMapOnTransmitter = () => {
             if (!isNaN(transmitter.tx_lat) && !isNaN(transmitter.tx_lon)) {
@@ -20,8 +20,8 @@ export default {
             const popover = new bootstrap.Popover(popoverTrigger, {
                 trigger: "manual", // Popover will only appear when triggered programmatically
             });
-            let lat = store.$state.transmitter.tx_lat;
-            let lng = store.$state.transmitter.tx_lon;
+            let lat = store.$state.splatParams.transmitter.tx_lat;
+            let lng = store.$state.splatParams.transmitter.tx_lon;
             let currentMarker = L.marker([lat, lng]).addTo(store.$state.map); // Variable to hold the current marker
     
             // Event Listener for "Set with Map" Button
@@ -39,7 +39,7 @@ export default {
                 }
                 // Add a new marker at the clicked location
                 currentMarker = L.marker([lat, lng]).addTo(store.$state.map);
-                popover.hide(); // Hide the popover
+                    popover.hide(); // Hide the popover
                 });
             });
         });
