@@ -31,17 +31,21 @@ RUN chmod +x build && chmod +x configure && chmod +x install
 RUN sed -i.bak 's/-march=\$cpu/-march=native/g' build && \
     printf "8\n4\n" | ./configure && \
     ./install splat
-
-RUN cp splat /app
-RUN chmod +x /app/splat
+# RUN cp ./splat /app/splat
 
 # SPLAT utils including srtm2sdf
-WORKDIR app/splat/utils
+WORKDIR /app/splat/utils
 RUN chmod +x build
-RUN ./build all
-RUN cp srtm2sdf /app
-RUN cp srtm2sdf-hd /app
+RUN ./build all && cp srtm2sdf /app && cp srtm2sdf-hd /app
+RUN cp -a ./ /app/splat
 
 WORKDIR /app
+RUN chmod +x /app/splat/splat
+RUN chmod +x /app/splat/srtm2sdf
+RUN chmod +x /app/splat/citydecoder
+RUN chmod +x /app/splat/bearing
+RUN chmod +x /app/splat/fontdata
+RUN chmod +x /app/splat/usgs2sdf
+RUN ls -alh
 # Expose the application port
 EXPOSE 8080

@@ -20,6 +20,7 @@ from app.services.splat import Splat
 from app.models.CoveragePredictionRequest import CoveragePredictionRequest
 import logging
 import io
+import os
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -28,7 +29,7 @@ logger = logging.getLogger(__name__)
 redis_client = redis.StrictRedis(host="localhost", port=6379, decode_responses=False)
 
 # Initialize SPLAT service
-splat_service = Splat(splat_path="/app")
+splat_service = Splat(splat_path="/app/splat")
 
 # Initialize FastAPI app
 app = FastAPI()

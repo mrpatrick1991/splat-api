@@ -8,8 +8,6 @@ services:
       - TERM=xterm
     ports:
       - "8080:8080"
-    volumes:
-      - .:/app
     depends_on:
       - redis
     working_dir: "/app"
