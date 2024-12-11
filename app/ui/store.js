@@ -109,7 +109,7 @@ const useStore = defineStore('store', {
         console.log("Payload:", payload);
     
         // Send the request to the backend's /predict endpoint
-        const predictResponse = await fetch("http://localhost:8000/predict", {
+        const predictResponse = await fetch("/predict", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -142,7 +142,7 @@ const useStore = defineStore('store', {
         const pollInterval = 1000; // 1 seconds
         const pollStatus = async () => {
           const statusResponse = await fetch(
-            `http://localhost:8000/status/${taskId}`,
+            `/status/${taskId}`,
           );
           if (!statusResponse.ok) {
             throw new Error("Failed to fetch task status.");
@@ -160,7 +160,7 @@ const useStore = defineStore('store', {
 
             // Fetch the GeoTIFF data
             const resultResponse = await fetch(
-              `http://localhost:8000/result/${taskId}`,
+              `/result/${taskId}`,
             );
             if (!resultResponse.ok) {
               throw new Error("Failed to fetch simulation result.");
