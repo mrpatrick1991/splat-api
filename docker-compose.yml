@@ -12,14 +12,8 @@ services:
       - redis
     working_dir: "/app"
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
-
-  static:
-    image: nginx:latest
-    container_name: static
-    ports:
-      - "80:80"
-    volumes:
-      - ./app/ui:/usr/share/nginx/html:ro
+    networks:
+      - app-network
 
   redis:
     image: redis:latest
@@ -27,3 +21,8 @@ services:
     ports:
       - "6379:6379"
     command: ["redis-server"]
+    networks:
+      - app-network
+
+networks:
+  app-network:

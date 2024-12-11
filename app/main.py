@@ -14,6 +14,7 @@ import redis
 from fastapi import FastAPI, BackgroundTasks
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from uuid import uuid4
 from app.services.splat import Splat
 from app.models.CoveragePredictionRequest import CoveragePredictionRequest
@@ -25,7 +26,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Initialize Redis client for binary data
-redis_client = redis.StrictRedis(host="localhost", port=6379, decode_responses=False)
+redis_client = redis.StrictRedis(host="redis", port=6379, decode_responses=False)
 
 # Initialize SPLAT service
 splat_service = Splat(splat_path="/app/splat")
@@ -158,3 +159,5 @@ async def get_result(task_id: str):
 
     logger.info(f"Task {task_id} is still processing.")
     return JSONResponse({"status": "processing"})
+
+app.mount("/", StaticFiles(directory="app/ui", html=True), name="ui")
