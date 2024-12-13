@@ -1,16 +1,20 @@
 const { defineStore } = Pinia
 const { useLocalStorage } = VueUse
 
+function cloneObject(item) {
+  return JSON.parse(JSON.stringify(item));
+}
+
 const useStore = defineStore('store', {
   state() {
     return {
       map: L.map("map", {
         zoomControl: false, // Disable the default zoom control
       }),
-      currentLayer: null,
-      layers: useLocalStorage('layers', []),
+      localSites: useLocalStorage('localSites', []),
       splatParams: {
         transmitter: {
+          name: `Site ${Math.floor(Math.random() * 1000)}`,
           tx_lat: 51.102167,
           tx_lon: -114.098667,
           tx_power: 0.1,
@@ -52,6 +56,29 @@ const useStore = defineStore('store', {
       this.splatParams.transmitter.tx_lat = lat
       this.splatParams.transmitter.tx_lon = lon
     },
+    removeSite(index) {
+      console.log(this.map.layers)
+      this.localSites.splice(index, 1)
+      this.map.eachLayer((layer) => {
+        if (layer instanceof GeoRasterLayer) {
+          this.map.removeLayer(layer);
+        }
+      });
+      this.redrawSites()
+    },
+    redrawSites() {
+      this.localSites.forEach(site => {
+        parseGeoraster(site.raster).then((georaster) => {;
+          // Add the new layer to the map
+          const rasterLayer = new GeoRasterLayer({
+            georaster: georaster,
+            opacity: 0.7,
+            noDataValue: 255,
+          });
+          rasterLayer.addTo(this.map);
+        });
+      });
+    },
     initMap() {      
       this.map.setView([51.102167, -114.098667], 10);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -66,6 +93,8 @@ const useStore = defineStore('store', {
           position: "topleft",
         })
         .addTo(this.map);
+
+      this.redrawSites();
     },
     async runSimulation() {
       console.log('Simulation running...')
@@ -154,9 +183,9 @@ const useStore = defineStore('store', {
           if (statusData.status === "completed") {
             console.log("Simulation completed! Adding result to the map...");
 
-        spinner.style.display = "none";
-        buttonText.textContent = "Run Simulation";
-        runButton.disabled = false; // Re-enable the button
+            spinner.style.display = "none";
+            buttonText.textContent = "Run Simulation";
+            runButton.disabled = false; // Re-enable the button
 
             // Fetch the GeoTIFF data
             const resultResponse = await fetch(
@@ -165,21 +194,19 @@ const useStore = defineStore('store', {
             if (!resultResponse.ok) {
               throw new Error("Failed to fetch simulation result.");
             }
-            const arrayBuffer = await resultResponse.arrayBuffer();
-            // Use georaster-layer-for-leaflet to display the GeoTIFF
-            const georaster = await parseGeoraster(arrayBuffer);
-            // Remove the layer if it exists
-            if (this.currentLayer) {
-              this.map.removeLayer(this.currentLayer);
+            else
+            {
+              const arrayBuffer = await resultResponse.arrayBuffer();
+              this.localSites.push({
+                params: cloneObject(this.splatParams),
+                taskId,
+                raster: new Uint8Array(arrayBuffer)
+              });
+              this.splatParams.transmitter.name = `Site ${Math.floor(Math.random() * 1000)}`;
+              console.log([...this.localSites]);
+              this.redrawSites();
             }
-            // Add the new layer to the map
-            this.currentLayer = new GeoRasterLayer({
-              georaster: georaster,
-              opacity: 0.7,
-              noDataValue: 255,
-            });
-            this.currentLayer.addTo(this.map);
-          } 
+          }
           else if (statusData.status === "failed") {
             console.error("Simulation failed!");
             spinner.style.display = "none"; // Hide spinner

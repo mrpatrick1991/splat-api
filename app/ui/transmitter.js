@@ -49,6 +49,12 @@ export default {
     template: `
         <form novalidate>
             <div class="row g-2">
+                <div class="col-12">
+                    <label for="name" class="form-label">Site name</label>
+                    <input v-model="transmitter.name" class="form-control form-control-sm" id="name" required data-bs-toggle="tooltip" title="Site Name" />
+                </div>
+            </div>
+            <div class="row g-2">
                 <div class="col-6">
                     <label for="tx_lat" class="form-label">Latitude (degrees)</label>
                     <input v-model="transmitter.tx_lat" type="number" class="form-control form-control-sm" id="tx_lat" required min="-90" max="90" step="0.000001" data-bs-toggle="tooltip" title="Transmitter latitude in degrees (-90 to 90)." />

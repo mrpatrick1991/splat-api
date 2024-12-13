@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    volumes:
+      - ./ui:/app/ui
     environment:
       - HOME=/root
       - TERM=xterm
