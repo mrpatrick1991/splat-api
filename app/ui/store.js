@@ -68,15 +68,13 @@ const useStore = defineStore('store', {
     },
     redrawSites() {
       this.localSites.forEach(site => {
-        parseGeoraster(site.raster).then((georaster) => {;
-          // Add the new layer to the map
-          const rasterLayer = new GeoRasterLayer({
-            georaster: georaster,
-            opacity: 0.7,
-            noDataValue: 255,
-          });
-          rasterLayer.addTo(this.map);
+        // Add the new layer to the map
+        const rasterLayer = new GeoRasterLayer({
+          georaster: {...site}.raster,
+          opacity: 0.7,
+          noDataValue: 255,
         });
+        rasterLayer.addTo(this.map);
       });
     },
     initMap() {      
@@ -197,13 +195,13 @@ const useStore = defineStore('store', {
             else
             {
               const arrayBuffer = await resultResponse.arrayBuffer();
+              const geoRaster = await parseGeoraster(arrayBuffer);
               this.localSites.push({
                 params: cloneObject(this.splatParams),
                 taskId,
-                raster: new Uint8Array(arrayBuffer)
+                raster: geoRaster
               });
               this.splatParams.transmitter.name = `Site ${Math.floor(Math.random() * 1000)}`;
-              console.log([...this.localSites]);
               this.redrawSites();
             }
           }
