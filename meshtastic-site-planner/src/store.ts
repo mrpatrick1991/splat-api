@@ -4,17 +4,16 @@ import L from 'leaflet';
 import 'leaflet.locatecontrol';
 import GeoRasterLayer from 'georaster-layer-for-leaflet';
 import parseGeoraster from 'georaster';
-function cloneObject(item: any) {
-  return JSON.parse(JSON.stringify(item));
-}
+import { type Site, type SplatParams } from './types.ts';
+import { cloneObject } from './utils.ts';
 
 const useStore = defineStore('store', {
   state() {
     return {
       map: undefined as undefined | L.Map,
       currentMarker: undefined as undefined | L.Marker,
-      localSites: useLocalStorage('localSites', []),
-      splatParams: {
+      localSites: useLocalStorage('localSites', [] as Site[]),
+      splatParams: <SplatParams>{
         transmitter: {
           name: `Site ${Math.floor(Math.random() * 1000)}`,
           tx_lat: 51.102167,
@@ -69,7 +68,7 @@ const useStore = defineStore('store', {
       this.redrawSites()
     },
     redrawSites() {
-      this.localSites.forEach(site => {
+      this.localSites.forEach((site: Site) => {
         // Add the new layer to the map
         const rasterLayer = new GeoRasterLayer({
           georaster: {...site}.raster,
@@ -164,10 +163,11 @@ const useStore = defineStore('store', {
     
         console.log(`Prediction started with task ID: ${taskId}`);
 
+        // FIXME: remove DOM manipulation and just bind to states
         // display spinner to show task is running
-        const runButton = document.getElementById("runSimulation")!;
-        const spinner = runButton.querySelector(".spinner-border")!;
-        const buttonText = runButton!.querySelector(".button-text");
+        const runButton = document.getElementById("runSimulation") as HTMLButtonElement;
+        const spinner = runButton.querySelector(".spinner-border") as HTMLElement;
+        const buttonText = runButton!.querySelector(".button-text") as HTMLElement;
 
         // Show spinner and update text
         spinner.style.display = "inline-block";
