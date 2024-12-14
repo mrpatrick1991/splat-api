@@ -1,16 +1,18 @@
-const { defineStore } = Pinia
-const { useLocalStorage } = VueUse
-
-function cloneObject(item) {
+import { defineStore } from 'pinia';
+import { useLocalStorage } from '@vueuse/core';
+import L from 'leaflet';
+import 'leaflet.locatecontrol';
+import GeoRasterLayer from 'georaster-layer-for-leaflet';
+import parseGeoraster from 'georaster';
+function cloneObject(item: any) {
   return JSON.parse(JSON.stringify(item));
 }
 
 const useStore = defineStore('store', {
   state() {
     return {
-      map: L.map("map", {
-        zoomControl: false, // Disable the default zoom control
-      }),
+      map: undefined as undefined | L.Map,
+      currentMarker: undefined as undefined | L.Marker,
       localSites: useLocalStorage('localSites', []),
       splatParams: {
         transmitter: {
@@ -52,14 +54,14 @@ const useStore = defineStore('store', {
     }
   },
   actions: {
-    setTxCoords(lat, lon) {
+    setTxCoords(lat: number, lon: number) {
       this.splatParams.transmitter.tx_lat = lat
       this.splatParams.transmitter.tx_lon = lon
     },
-    removeSite(index) {
+    removeSite(index: number) {
       console.log(this.map.layers)
       this.localSites.splice(index, 1)
-      this.map.eachLayer((layer) => {
+      this.map.eachLayer((layer: L.Layer) => {
         if (layer instanceof GeoRasterLayer) {
           this.map.removeLayer(layer);
         }
@@ -76,9 +78,16 @@ const useStore = defineStore('store', {
         });
         rasterLayer.addTo(this.map);
       });
+      this.map.set
     },
-    initMap() {      
-      this.map.setView([51.102167, -114.098667], 10);
+    initMap() {     
+      this.map = L.map("map", {
+        // center: [51.102167, -114.098667],
+        zoom: 10,
+        zoomControl: false,
+      });
+      const position: [number, number] = [this.splatParams.transmitter.tx_lat, this.splatParams.transmitter.tx_lon];
+      this.map.setView(position, 10);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: "© OpenStreetMap contributors",
@@ -86,11 +95,12 @@ const useStore = defineStore('store', {
       
       L.control.zoom({ position: "topleft" }).addTo(this.map);
       
-      L.control
-        .locate({
-          position: "topleft",
-        })
-        .addTo(this.map);
+      // L.control
+      //   .locate({
+      //     position: "topleft",
+      //   })
+      //   .addTo(this.map);
+      this.currentMarker = L.marker(position).addTo(this.map); // Variable to hold the current marker
 
       this.redrawSites();
     },
@@ -155,10 +165,9 @@ const useStore = defineStore('store', {
         console.log(`Prediction started with task ID: ${taskId}`);
 
         // display spinner to show task is running
-
-        const runButton = document.getElementById("runSimulation");
-        const spinner = runButton.querySelector(".spinner-border");
-        const buttonText = runButton.querySelector(".button-text");
+        const runButton = document.getElementById("runSimulation")!;
+        const spinner = runButton.querySelector(".spinner-border")!;
+        const buttonText = runButton!.querySelector(".button-text");
 
         // Show spinner and update text
         spinner.style.display = "inline-block";

@@ -6,19 +6,8 @@
     <title>Meshtastic Radio Simulation</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="stylesheet.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.82.0/dist/L.Control.Locate.min.css" />
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="https://unpkg.com/vue-demi"></script>
-    <script src="https://unpkg.com/pinia"></script>
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <script src="https://unpkg.com/@vueuse/shared"></script>
-    <script src="https://unpkg.com/@vueuse/core"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.82.0/dist/L.Control.Locate.min.js"></script>
-    <script src="https://unpkg.com/georaster"></script>
-    <script src="https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js"></script>
+    <script type="module" src="/main.js"></script>
   </head>
   <body>
     <div>
@@ -98,37 +87,4 @@
       </div>
     </div>
   </body>
-  <script type="module">
-    const { createApp, ref } = Vue
-    const { createPinia } = Pinia
-    import Transmitter from './transmitter.js'
-    import Receiver from './receiver.js'
-    import Environment from './environment.js'
-    import Simulation from './simulation.js'
-    import Display from './display.js'
-    import { useStore } from './store.js'
-
-    const pinia = createPinia()
-    const app = createApp({
-      setup() {
-        const store = useStore();
-        const runSimulation = async () => {
-          await store.runSimulation();
-        }
-        return {
-          runSimulation,
-          store,
-        }
-      },
-      components: {
-        Transmitter,
-        Receiver,
-        Environment,
-        Simulation,
-        Display
-      }
-    });
-    app.use(pinia);
-    app.mount('#app');
-  </script>
 </html>
