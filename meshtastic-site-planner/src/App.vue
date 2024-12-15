@@ -49,13 +49,15 @@
                 </ul>
               </li>
               <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">Display</a>
-                <ul class="dropdown-menu dropdown-menu-dark p-3">
-                  <li>
-                    <Display />
-                  </li>
-                </ul>
-              </li>
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="true">
+                Display
+              </a>
+            <ul class="dropdown-menu dropdown-menu-dark p-3 show">
+            <li>
+              <Display />
+            </li>
+            </ul>
+            </li>
             </ul>
             <div class="mt-3 d-flex gap-2">
               <button @click="store.runSimulation" type="button" class="btn btn-success btn-sm" id="runSimulation">
