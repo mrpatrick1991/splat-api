@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { useLocalStorage } from '@vueuse/core';
+import { randanimal, randanimalSync } from 'randanimal';
 import L from 'leaflet';
 import 'leaflet.locatecontrol';
 import GeoRasterLayer from 'georaster-layer-for-leaflet';
@@ -15,7 +16,7 @@ const useStore = defineStore('store', {
       localSites: useLocalStorage('localSites', [] as Site[]),
       splatParams: <SplatParams>{
         transmitter: {
-          name: `Site ${Math.floor(Math.random() * 1000)}`,
+          name: randanimalSync(),
           tx_lat: 51.102167,
           tx_lon: -114.098667,
           tx_power: 0.1,
@@ -210,7 +211,7 @@ const useStore = defineStore('store', {
                 taskId,
                 raster: geoRaster
               });
-              this.splatParams.transmitter.name = `Site ${Math.floor(Math.random() * 1000)}`;
+              this.splatParams.transmitter.name = await randanimal();
               this.redrawSites();
             }
           }

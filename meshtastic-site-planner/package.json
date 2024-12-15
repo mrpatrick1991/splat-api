@@ -16,6 +16,7 @@
     "leaflet": "^1.9.4",
     "leaflet.locatecontrol": "^0.82.0",
     "pinia": "^2.3.0",
+    "randanimal": "^1.0.4",
     "vue": "^3.5.13",
     "vue3-popper": "^1.5.0"
   },
