@@ -19,8 +19,8 @@ const useStore = defineStore('store', {
           tx_lat: 51.102167,
           tx_lon: -114.098667,
           tx_power: 0.1,
-          tx_freq: 905.0,
-          tx_height: 1.0,
+          tx_freq: 907.0,
+          tx_height: 2.0,
           tx_gain: 2.0
         },
         receiver: {
