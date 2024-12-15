@@ -17,7 +17,7 @@
           <div class="offcanvas-body">
             <ul class="navbar-nav">
               <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="true">Transmitter</a>
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="true">Site / Transmitter</a>
                 <ul class="dropdown-menu dropdown-menu-dark p-3 show">
                   <li>
                     <Transmitter />
