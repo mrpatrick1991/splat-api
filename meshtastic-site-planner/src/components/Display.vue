@@ -19,10 +19,8 @@
                     <option value="plasma" selected>Plasma</option>
                     <option value="CMRmap">CMR map</option>
                     <option value="cool">Cool</option>
-                    <option value="rainbow">Rainbow</option>
                     <option value="viridis">Viridis</option>
                     <option value="turbo">Turbo</option>
-                    <option value="cividis">Cividis</option>
                     <option value="jet">Jet</option>
                 </select>
                 <div class="invalid-feedback">Please select a color scale.</div>
@@ -33,6 +31,21 @@
                 <div class="invalid-feedback">Transparency must be between 0 and 100 (default: 50).</div>
             </div>
         </div>
+    <div class="mt-3 text-center">
+      <div>
+        <img
+          :src="`/colormaps/${display.color_scale}.png`"
+          alt="Colorbar"
+          width="256"
+          height="30"
+          style="border: 1px solid #ccc; display: block; margin: 0 auto;"
+        />
+      </div>
+      <div class="d-flex justify-content-between mt-1">
+        <span class="badge bg-primary">{{ display.min_dbm }} dBm</span>
+        <span class="badge bg-primary">{{ display.max_dbm }} dBm</span>
+      </div>
+    </div>
     </form>
 </template>
 
