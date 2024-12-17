@@ -11,4 +11,8 @@ export default defineConfig({
       '/result': 'http://localhost:8080/',
     },
   },
+  build: {
+    outDir: 'app/ui',
+    emptyOutDir: true,
+  },
 })
