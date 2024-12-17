@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { useLocalStorage } from '@vueuse/core';
-import randanimalSync from 'randanimal';
+import { randanimalSync } from 'randanimal';
 import L from 'leaflet';
 import 'leaflet.locatecontrol';
 import GeoRasterLayer from 'georaster-layer-for-leaflet';
