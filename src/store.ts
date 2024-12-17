@@ -2,9 +2,9 @@ import { defineStore } from 'pinia';
 import { useLocalStorage } from '@vueuse/core';
 import { randanimalSync } from 'randanimal';
 import L from 'leaflet';
-import 'leaflet.locatecontrol';
 import GeoRasterLayer from 'georaster-layer-for-leaflet';
 import parseGeoraster from 'georaster';
+import "leaflet-easyprint";
 import { type Site, type SplatParams } from './types.ts';
 import { cloneObject } from './utils.ts';
 
@@ -93,14 +93,18 @@ const useStore = defineStore('store', {
         maxZoom: 19,
         attribution: "© OpenStreetMap contributors",
       }).addTo(this.map as L.Map);
-      
-      L.control.zoom({ position: "topleft" }).addTo(this.map as L.Map);
-      
-      // L.control
-      //   .locate({
-      //     position: "topleft",
-      //   })
-      //   .addTo(this.map);
+      L.control.zoom({ position: "bottomleft" }).addTo(this.map as L.Map);
+
+
+      // EasyPrint control
+      (L.easyPrint as any)({
+        title: "Save",
+        position: "bottomleft",
+        sizeModes: ["A4Portrait", "A4Landscape"],
+        filename: "sites",
+        exportOnly: true
+      }).addTo(this.map as L.Map);
+
       this.currentMarker = L.marker(position).addTo(this.map as L.Map); // Variable to hold the current marker
 
       this.redrawSites();

@@ -14,6 +14,7 @@
     "georaster": "^1.6.0",
     "georaster-layer-for-leaflet": "^3.10.0",
     "leaflet": "^1.9.4",
+    "leaflet-easyprint": "^2.1.9",
     "leaflet.locatecontrol": "^0.82.0",
     "pinia": "^2.3.0",
     "randanimal": "^1.0.4",

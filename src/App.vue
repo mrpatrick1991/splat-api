@@ -64,8 +64,6 @@
                 <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
                 <span class="button-text">Run Simulation</span>
               </button>
-              <button type="button" class="btn btn-primary btn-sm" id="downloadKML">Download KML</button>
-              <button type="button" class="btn btn-secondary btn-sm" id="clearOutput">Clear Output</button>
             </div>
             <ul class="list-group mt-3">
               <li class="list-group-item d-flex justify-content-between align-items-center" v-for="(site, index) in store.$state.localSites" :key="site.taskId">
