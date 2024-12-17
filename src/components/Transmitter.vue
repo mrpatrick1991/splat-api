@@ -54,14 +54,14 @@
     import L from 'leaflet';
     import * as bootstrap from 'bootstrap';
     import { useStore } from '../store.ts'
-    import { onMounted } from "vue";
+    import { onMounted } from 'vue';
     // import L from 'leaflet';
     const store = useStore();
     const transmitter = store.splatParams.transmitter;
 
     const centerMapOnTransmitter = () => {
         if (!isNaN(transmitter.tx_lat) && !isNaN(transmitter.tx_lon)) {
-            store.map.setView([transmitter.tx_lat, transmitter.tx_lon], store.map.getZoom()); // Center map on the coordinates
+            store.map!.setView([transmitter.tx_lat, transmitter.tx_lon], store.map!.getZoom()); // Center map on the coordinates
         } else {
             alert("Please enter valid Latitude and Longitude values.");
         }
@@ -72,7 +72,7 @@
 
     const setWithMap = () => {
         popover.show();
-        store.map.once("click", function (e: any) {
+        store.map!.once("click", function (e: any) {
             let { lat, lng } = e.latlng; // Get clicked location coordinates
             lng = ((((lng + 180) % 360) + 360) % 360) - 180;
 
@@ -80,15 +80,15 @@
 
             // Remove the existing marker if it exists
             if (store.currentMarker) {
-                store.map.removeLayer(store.currentMarker);
+                store.map!.removeLayer(store.currentMarker as L.Marker);
             }
             // Add a new marker at the clicked location
-            store.currentMarker = L.marker([lat, lng]).addTo(store.map);
+            store.currentMarker = L.marker([lat, lng]).addTo(store.map as L.Map);
             popover.hide(); // Hide the popover
         });
     };
     onMounted(() => {
-        popover = new bootstrap.Popover(document.getElementById("setWithMap"), {
+        popover = new bootstrap.Popover(document.getElementById("setWithMap") as Element, {
             trigger: "manual",
         });
         store.initMap(); // Initialize the map

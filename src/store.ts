@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { useLocalStorage } from '@vueuse/core';
-import { randanimal, randanimalSync } from 'randanimal';
+import { randanimalSync } from 'randanimal';
 import L from 'leaflet';
 import 'leaflet.locatecontrol';
 import GeoRasterLayer from 'georaster-layer-for-leaflet';
@@ -59,11 +59,13 @@ const useStore = defineStore('store', {
       this.splatParams.transmitter.tx_lon = lon
     },
     removeSite(index: number) {
-      console.log(this.map.layers)
+      if (!this.map) {
+        return
+      }
       this.localSites.splice(index, 1)
       this.map.eachLayer((layer: L.Layer) => {
         if (layer instanceof GeoRasterLayer) {
-          this.map.removeLayer(layer);
+          this.map!.removeLayer(layer);
         }
       });
       this.redrawSites()
@@ -78,7 +80,6 @@ const useStore = defineStore('store', {
         });
         rasterLayer.addTo(this.map);
       });
-      this.map.set
     },
     initMap() {     
       this.map = L.map("map", {
@@ -91,16 +92,16 @@ const useStore = defineStore('store', {
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: "© OpenStreetMap contributors",
-      }).addTo(this.map);
+      }).addTo(this.map as L.Map);
       
-      L.control.zoom({ position: "topleft" }).addTo(this.map);
+      L.control.zoom({ position: "topleft" }).addTo(this.map as L.Map);
       
       // L.control
       //   .locate({
       //     position: "topleft",
       //   })
       //   .addTo(this.map);
-      this.currentMarker = L.marker(position).addTo(this.map); // Variable to hold the current marker
+      this.currentMarker = L.marker(position).addTo(this.map as L.Map); // Variable to hold the current marker
 
       this.redrawSites();
     },
@@ -211,7 +212,7 @@ const useStore = defineStore('store', {
                 taskId,
                 raster: geoRaster
               });
-              this.splatParams.transmitter.name = await randanimal();
+              this.splatParams.transmitter.name = await randanimalSync();
               this.redrawSites();
             }
           }

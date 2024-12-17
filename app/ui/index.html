@@ -2,89 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Meshtastic Radio Simulation</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.82.0/dist/L.Control.Locate.min.css" />
-    <script type="module" src="/main.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <title>Meshtastic Site Planner</title>
+    <script type="module" crossorigin src="/assets/index-B5h9cZKt.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BA0q2goN.css">
   </head>
   <body>
-    <div>
-      <nav class="navbar navbar-dark bg-dark fixed-top" id="app">
-        <div class="container-fluid">
-          <a class="navbar-brand" href="#">Meshtastic Radio Simulation</a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDarkNavbar" aria-controls="offcanvasDarkNavbar" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="offcanvas offcanvas-end text-bg-dark show" tabindex="-1" id="offcanvasDarkNavbar" aria-labelledby="offcanvasDarkNavbarLabel" data-bs-backdrop="false">
-            <div class="offcanvas-header">
-              <h5 class="offcanvas-title" id="offcanvasDarkNavbarLabel">Radio / Location Data</h5>
-              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-            </div>
-            <div class="offcanvas-body">
-              <ul class="navbar-nav">
-                <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="true">Transmitter</a>
-                  <ul class="dropdown-menu dropdown-menu-dark p-3 show">
-                    <li>
-                      <Transmitter />
-                    </li>
-                  </ul>
-                </li>
-                <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">Receiver</a>
-                  <ul class="dropdown-menu dropdown-menu-dark p-3">
-                    <li>
-                      <Receiver />
-                    </li>
-                  </ul>
-                </li>
-                <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">Environment</a>
-                  <ul class="dropdown-menu dropdown-menu-dark p-3">
-                    <li>
-                      <Environment />
-                    </li>
-                  </ul>
-                </li>
-                <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">Simulation Options</a>
-                  <ul class="dropdown-menu dropdown-menu-dark p-3">
-                    <li>
-                      <Simulation />
-                    </li>
-                  </ul>
-                </li>
-                <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">Display</a>
-                  <ul class="dropdown-menu dropdown-menu-dark p-3">
-                    <li>
-                      <Display />
-                    </li>
-                  </ul>
-                </li>
-              </ul>
-              <div class="mt-3 d-flex gap-2">
-                <button @click="runSimulation" type="button" class="btn btn-success btn-sm" id="runSimulation">
-                  <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
-                  <span class="button-text">Run Simulation</span>
-                </button>
-                <button type="button" class="btn btn-primary btn-sm" id="downloadKML">Download KML</button>
-                <button type="button" class="btn btn-secondary btn-sm" id="clearOutput">Clear Output</button>
-              </div>
-              <ul class="list-group mt-3">
-                <li class="list-group-item d-flex justify-content-between align-items-center" v-for="(site, index) in store.$state.localSites" :key="site.taskId">
-                  <span>{{ site.params.transmitter.name }}</span>
-                  <button type="button" @click="store.removeSite(index)" class="btn-close" aria-label="Close"></button>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </nav>
-      <div id="map">
-      </div>
-    </div>
+    <div id="app"></div>
   </body>
 </html>

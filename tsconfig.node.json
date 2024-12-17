@@ -13,6 +13,8 @@
     "moduleDetection": "force",
     "noEmit": true,
 
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
