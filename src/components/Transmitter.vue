@@ -44,7 +44,9 @@
             </div>
         </div>
         <div class="mt-3 d-flex gap-2">
-            <button @click="setWithMap" type="button" id="setWithMap" class="btn btn-primary btn-sm" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="left" title="Set Coordinates" data-bs-content="" content="Click on the map to set the transmitter location.">Set with Map</button>
+            <button @click="setWithMap" type="button" id="setWithMap" class="btn btn-primary btn-sm" data-bs-toggle="popover" data-bs-trigger="manual" data-bs-placement="left" title="Set Coordinates" data-bs-content="" content="Click on the map to set the transmitter location.">
+                Set with Map
+            </button>
             <button @click="centerMapOnTransmitter" type="button" class="btn btn-secondary btn-sm">Center map on transmitter</button>
         </div>
     </form>
@@ -55,7 +57,7 @@
     import * as bootstrap from 'bootstrap';
     import { useStore } from '../store.ts'
     import { onMounted } from 'vue';
-    // import L from 'leaflet';
+    import { redPinMarker } from '../layers.ts';
     const store = useStore();
     const transmitter = store.splatParams.transmitter;
 
@@ -83,7 +85,7 @@
                 store.map!.removeLayer(store.currentMarker as L.Marker);
             }
             // Add a new marker at the clicked location
-            store.currentMarker = L.marker([lat, lng]).addTo(store.map as L.Map);
+            store.currentMarker = L.marker([lat, lng], { icon: redPinMarker }).addTo(store.map as L.Map)
             popover.hide(); // Hide the popover
         });
     };

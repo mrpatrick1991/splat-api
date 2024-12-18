@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { useLocalStorage } from '@vueuse/core';
+// import { useLocalStorage } from '@vueuse/core';
 import { randanimalSync } from 'randanimal';
 import L from 'leaflet';
 import GeoRasterLayer from 'georaster-layer-for-leaflet';
@@ -7,13 +7,15 @@ import parseGeoraster from 'georaster';
 import 'leaflet-easyprint';
 import { type Site, type SplatParams } from './types.ts';
 import { cloneObject } from './utils.ts';
+import { redPinMarker } from './layers.ts';
 
 const useStore = defineStore('store', {
   state() {
     return {
       map: undefined as undefined | L.Map,
       currentMarker: undefined as undefined | L.Marker,
-      localSites: useLocalStorage('localSites', [] as Site[]),
+      localSites: [] as Site[], //useLocalStorage('localSites', ),
+      simulationState: 'idle',
       splatParams: <SplatParams>{
         transmitter: {
           name: randanimalSync(),
@@ -41,7 +43,7 @@ const useStore = defineStore('store', {
         simulation: {
           situation_fraction: 90.0,
           time_fraction: 90.0,
-          simulation_extent: 10.0,
+          simulation_extent: 30.0,
           high_resolution: false
         },
         display: {
@@ -77,6 +79,8 @@ const useStore = defineStore('store', {
           georaster: {...site}.raster,
           opacity: 0.7,
           noDataValue: 255,
+          resolution: 256,
+          //updateWhenZooming: true,
         });
         rasterLayer.addTo(this.map);
       });
@@ -104,8 +108,7 @@ const useStore = defineStore('store', {
         exportOnly: true
       }).addTo(this.map as L.Map);
 
-      this.currentMarker = L.marker(position).addTo(this.map as L.Map); // Variable to hold the current marker
-
+      this.currentMarker = L.marker(position, { icon: redPinMarker }).addTo(this.map as L.Map).bindPopup("Transmitter site"); // Variable to hold the current marker
       this.redrawSites();
     },
     async runSimulation() {
@@ -148,6 +151,7 @@ const useStore = defineStore('store', {
         };
     
         console.log("Payload:", payload);
+        this.simulationState = 'running';
     
         // Send the request to the backend's /predict endpoint
         const predictResponse = await fetch("/predict", {
@@ -159,6 +163,7 @@ const useStore = defineStore('store', {
         });
     
         if (!predictResponse.ok) {
+          this.simulationState = 'failed';
           const errorDetails = await predictResponse.text();
           throw new Error(`Failed to start prediction: ${errorDetails}`);
         }
@@ -167,17 +172,6 @@ const useStore = defineStore('store', {
         const taskId = predictData.task_id;
     
         console.log(`Prediction started with task ID: ${taskId}`);
-
-        // FIXME: remove DOM manipulation and just bind to states
-        // display spinner to show task is running
-        const runButton = document.getElementById("runSimulation") as HTMLButtonElement;
-        const spinner = runButton.querySelector(".spinner-border") as HTMLElement;
-        const buttonText = runButton!.querySelector(".button-text") as HTMLElement;
-
-        // Show spinner and update text
-        spinner.style.display = "inline-block";
-        buttonText.textContent = "Running...";
-        runButton.disabled = true; // Disable the button
 
         // Poll for task status and result
         const pollInterval = 1000; // 1 seconds
@@ -193,11 +187,8 @@ const useStore = defineStore('store', {
           console.log("Task status:", statusData);
     
           if (statusData.status === "completed") {
+            this.simulationState = 'completed';
             console.log("Simulation completed! Adding result to the map...");
-
-            spinner.style.display = "none";
-            buttonText.textContent = "Run Simulation";
-            runButton.disabled = false; // Re-enable the button
 
             // Fetch the GeoTIFF data
             const resultResponse = await fetch(
@@ -215,14 +206,13 @@ const useStore = defineStore('store', {
                 taskId,
                 raster: geoRaster
               });
+              this.currentMarker!.bindPopup(this.splatParams.transmitter.name)
               this.splatParams.transmitter.name = await randanimalSync();
               this.redrawSites();
             }
           }
           else if (statusData.status === "failed") {
-            console.error("Simulation failed!");
-            spinner.style.display = "none"; // Hide spinner
-            runButton.disabled = false; // Re-enable the button
+            this.simulationState = 'failed';
           } else {
             setTimeout(pollStatus, pollInterval); // Retry after interval
           }
