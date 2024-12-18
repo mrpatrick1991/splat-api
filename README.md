@@ -17,8 +17,8 @@ SRTM (shuttle radar topography) dataset (https://www.earthdata.nasa.gov/data/ins
 
 This tool runs a physics simulation which depends on several important assumptions. The most important ones are:
 
-1) The SRTM terrain model is accurate to 90 meters (or 30, when using the optional high resolution mode.)
-2) There are no obstructions besides terrain which absorb the radio signal. This includes trees, artificial structures such as buildings, or transient effects like precipitation.
+1) The SRTM terrain model is accurate to 90 meters.
+2) There are no obstructions besides terrain which attenuate the radio signal. This includes trees, artificial structures such as buildings, or transient effects like precipitation.
 3) Antennas are isotropic in the horizontal plane (we do not account for directional antennas). 
 
 A detailed description of the model parameters and their recommended values is available at TODO.
@@ -29,14 +29,16 @@ Requirements:
 
 * docker and docker-compose
 * git
-* npm
+* pnpm
 
 ```
-git clone --recurse-submodules https://github.com/mrpatrick1991/splat-api/ && cd splat-api
+git clone --recurse-submodules https://github.com/mrpatrick1991/splat-api/ && cd meshtastic-site-planner
 
-docker-compose -f docker-compose.yml up
+pnpm i && pnpm run build
 
-npm run dev
+docker-compose up --build
 ```
+
+For development, run `pnpm run dev`.
 
 ## Usage
