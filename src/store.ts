@@ -4,7 +4,7 @@ import { randanimalSync } from 'randanimal';
 import L from 'leaflet';
 import GeoRasterLayer from 'georaster-layer-for-leaflet';
 import parseGeoraster from 'georaster';
-import "leaflet-easyprint";
+import 'leaflet-easyprint';
 import { type Site, type SplatParams } from './types.ts';
 import { cloneObject } from './utils.ts';
 
@@ -95,9 +95,8 @@ const useStore = defineStore('store', {
       }).addTo(this.map as L.Map);
       L.control.zoom({ position: "bottomleft" }).addTo(this.map as L.Map);
 
-
       // EasyPrint control
-      (L.easyPrint as any)({
+      (L as any).easyPrint({
         title: "Save",
         position: "bottomleft",
         sizeModes: ["A4Portrait", "A4Landscape"],
