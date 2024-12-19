@@ -73,18 +73,29 @@ const useStore = defineStore('store', {
       this.redrawSites()
     },
     redrawSites() {
-      this.localSites.forEach((site: Site) => {
-        // Add the new layer to the map
-        const rasterLayer = new GeoRasterLayer({
-          georaster: {...site}.raster,
-          opacity: 0.7,
-          noDataValue: 255,
-          resolution: 256,
-          //updateWhenZooming: true,
-        });
-        rasterLayer.addTo(this.map);
-      });
-    },
+  if (!this.map) {
+    return;
+  }
+
+  // Remove existing GeoRasterLayers
+  this.map.eachLayer((layer: L.Layer) => {
+    if (layer instanceof GeoRasterLayer) {
+      this.map!.removeLayer(layer);
+    }
+  });
+
+  // Add GeoRasterLayers back to the map
+  this.localSites.forEach((site: Site) => {
+    const rasterLayer = new GeoRasterLayer({
+      georaster: {...site}.raster,
+      opacity: 0.7,
+      noDataValue: 255,
+      resolution: 256,
+    });
+    rasterLayer.addTo(this.map as L.Map);
+    rasterLayer.bringToFront();
+  });
+},
     initMap() {     
       this.map = L.map("map", {
         // center: [51.102167, -114.098667],
@@ -93,11 +104,38 @@ const useStore = defineStore('store', {
       });
       const position: [number, number] = [this.splatParams.transmitter.tx_lat, this.splatParams.transmitter.tx_lon];
       this.map.setView(position, 10);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: "© OpenStreetMap contributors",
-      }).addTo(this.map as L.Map);
+
       L.control.zoom({ position: "bottomleft" }).addTo(this.map as L.Map);
+
+      const cartoDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap contributors © CARTO',
+      }).addTo(this.map as L.Map); // Default base layer
+
+      const cartoLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap contributors © CARTO',
+      });
+
+      const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+      })
+
+      const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles © Esri — Source: Esri, USGS, NOAA',
+      });
+
+      const topoLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        attribution: 'Map data: © OpenStreetMap contributors, SRTM | OpenTopoMap',
+      });
+
+
+      // Base Layers
+      const baseLayers = {
+        "Carto Dark" : cartoDark,
+        "Carto Light": cartoLight,
+        "OSM": streetLayer,
+        "Satellite": satelliteLayer,
+        "Topo Map": topoLayer
+      };
 
       // EasyPrint control
       (L as any).easyPrint({
@@ -107,6 +145,14 @@ const useStore = defineStore('store', {
         filename: "sites",
         exportOnly: true
       }).addTo(this.map as L.Map);
+
+      L.control.layers(baseLayers, {}, {
+        position: "bottomleft",
+      }).addTo(this.map as L.Map);
+
+      this.map.on("baselayerchange", () => {
+        this.redrawSites(); // Re-apply the GeoRasterLayer on top
+      });
 
       this.currentMarker = L.marker(position, { icon: redPinMarker }).addTo(this.map as L.Map).bindPopup("Transmitter site"); // Variable to hold the current marker
       this.redrawSites();
