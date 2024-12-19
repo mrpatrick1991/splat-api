@@ -48,7 +48,7 @@ pnpm i && pnpm run build
 docker-compose up --build
 ```
 
-For development, use `pnpm run dev`.
+For running a development server, use `pnpm run dev`.
 
 
 
