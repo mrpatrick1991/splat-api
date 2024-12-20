@@ -9,6 +9,7 @@ services:
       - HOME=/root
       - TERM=xterm
       - VIRTUAL_HOST=site.meshtastic.org
+      - VIRTUAL_PORT=8080
       - LETSENCRYPT_HOST=site.meshtastic.org
     ports:
       - 8080:8080
