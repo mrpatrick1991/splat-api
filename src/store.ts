@@ -41,8 +41,8 @@ const useStore = defineStore('store', {
           atmosphere_bending: 301.0
         },
         simulation: {
-          situation_fraction: 90.0,
-          time_fraction: 90.0,
+          situation_fraction: 95.0,
+          time_fraction: 95.0,
           simulation_extent: 30.0,
           high_resolution: false
         },
