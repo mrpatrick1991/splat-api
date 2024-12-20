@@ -41,7 +41,7 @@ Requirements:
 - pnpm
 
 ```bash
-git clone --recurse-submodules https://github.com/mrpatrick1991/splat-api/ && cd meshtastic-site-planner
+git clone --recurse-submodules https://github.com/meshtastic/meshtastic-site-planner && cd meshtastic-site-planner
 
 pnpm i && pnpm run build
 
