@@ -36,6 +36,8 @@ services:
     ports:
       - 80:80
       - 443:443
+    environment:
+      - TRUST_DOWNSTREAM_PROXY=true
     volumes:
       # The vhost and conf volumes are only required
       # if you plan to obtain standalone certificates
