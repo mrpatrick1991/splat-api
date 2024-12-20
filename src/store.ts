@@ -73,29 +73,29 @@ const useStore = defineStore('store', {
       this.redrawSites()
     },
     redrawSites() {
-  if (!this.map) {
-    return;
-  }
+      if (!this.map) {
+        return;
+      }
 
-  // Remove existing GeoRasterLayers
-  this.map.eachLayer((layer: L.Layer) => {
-    if (layer instanceof GeoRasterLayer) {
-      this.map!.removeLayer(layer);
-    }
-  });
+      // Remove existing GeoRasterLayers
+      this.map.eachLayer((layer: L.Layer) => {
+        if (layer instanceof GeoRasterLayer) {
+          this.map!.removeLayer(layer);
+        }
+      });
 
-  // Add GeoRasterLayers back to the map
-  this.localSites.forEach((site: Site) => {
-    const rasterLayer = new GeoRasterLayer({
-      georaster: {...site}.raster,
-      opacity: 0.7,
-      noDataValue: 255,
-      resolution: 256,
-    });
-    rasterLayer.addTo(this.map as L.Map);
-    rasterLayer.bringToFront();
-  });
-},
+      // Add GeoRasterLayers back to the map
+      this.localSites.forEach((site: Site) => {
+        const rasterLayer = new GeoRasterLayer({
+          georaster: {...site}.raster,
+          opacity: 0.7,
+          noDataValue: 255,
+          resolution: 256,
+        });
+        rasterLayer.addTo(this.map as L.Map);
+        rasterLayer.bringToFront();
+      });
+    },
     initMap() {     
       this.map = L.map("map", {
         // center: [51.102167, -114.098667],
