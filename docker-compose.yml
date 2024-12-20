@@ -9,7 +9,7 @@ services:
       - HOME=/root
       - TERM=xterm
       - VIRTUAL_HOST=site.meshtastic.org
-      - LETSENCRYPT_HOST=site.meshtastic.org
+      # - LETSENCRYPT_HOST=site.meshtastic.org
     ports:
       - 8080:8080
     depends_on:
@@ -48,18 +48,18 @@ services:
       - /var/run/docker.sock:/tmp/docker.sock:ro
     network_mode: bridge
 
-  acme-companion:
-    image: nginxproxy/acme-companion
-    container_name: nginx-proxy-acme
-    environment:
-      - DEFAULT_EMAIL="thebentern@meshtastic.org"
-    volumes_from:
-      - nginx-proxy
-    volumes:
-      - certs:/etc/nginx/certs:rw
-      - acme:/etc/acme.sh
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    network_mode: bridge
+  # acme-companion:
+  #   image: nginxproxy/acme-companion
+  #   container_name: nginx-proxy-acme
+  #   environment:
+  #     - DEFAULT_EMAIL="thebentern@meshtastic.org"
+  #   volumes_from:
+  #     - nginx-proxy
+  #   volumes:
+  #     - certs:/etc/nginx/certs:rw
+  #     - acme:/etc/acme.sh
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #   network_mode: bridge
 
 networks:
   app-network:
