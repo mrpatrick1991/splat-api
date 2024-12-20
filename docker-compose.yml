@@ -18,8 +18,7 @@ services:
     working_dir: "/app"
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
     restart: unless-stopped
-    networks:
-      - app-network
+    network_mode: bridge
 
   redis:
     image: redis:latest
@@ -28,8 +27,7 @@ services:
       - 6379:6379
     command: [redis-server]
     restart: unless-stopped
-    networks:
-      - app-network
+    network_mode: bridge
 
   nginx-proxy:
     image: nginxproxy/nginx-proxy
@@ -61,9 +59,6 @@ services:
       - acme:/etc/acme.sh
       - /var/run/docker.sock:/var/run/docker.sock:ro
     network_mode: bridge
-
-networks:
-  app-network:
 
 volumes:
   # vhost:
