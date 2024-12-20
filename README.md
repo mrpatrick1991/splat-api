@@ -2,7 +2,7 @@
 
 ## About
 
-To use this tool, go to the official version:
+To use this tool, go to the official version: https://site.meshtastic.org
 
 This is an online utility for predicting the range of a Meshtastic radio. It creates radio coverage maps using the ITM/Longley-Rice model and SPLAT! software by John A. Magliacane, KD2BD (https://www.qsl.net/kd2bd/splat.html). The maps are used for planning repeater deployments and for estimating the coverage provided by an existing mesh network. The default parameters have been chosen based on experimental data and practical experience to produce results that are accurate for Meshtastic devices. Model parameters are adjustable, so this tool can also be used for amateur radio projects using different frequencies and higher transmit powers.
 
@@ -13,7 +13,7 @@ The terrain elevation tiles are streamed from AWS Open Data (https://registry.op
 
 The minimal steps for creating a Meshtastic coverage prediction are:
 
-1. Go to the official version or run a development copy and open the tool in a web browser. 
+1. Go to the [official version](https://site.meshtastic.org) or run a development copy and open the tool in a web browser. 
 2. In `Site Parameters > Site / Transmitter`, enter a name for the site, the geographic coordinates, and the antenna height above ground. Refer to the Meshtastic regional parameters (https://meshtastic.org/docs/configuration/region-by-country/) and input the transmit power, frequency, and antenna gain for your device. 
 3. In `Site Parameters > Receiver`, enter the receiver sensitivity (`-130 dBm` for the default `LongFast` channel), the receiver height, and the receiver antenna gain.
 4. In `Site Parameters > Receiver`, enter the maximum range for the simulation in kilometers. Selecting long ranges (> 50 kilometers) will result in longer computation times.
