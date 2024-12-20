@@ -11,6 +11,7 @@ from typing import Literal, List, Tuple
 import boto3
 from botocore import UNSIGNED
 from botocore.config import Config
+from botocore.exceptions import ClientError
 from diskcache import Cache
 
 import matplotlib.pyplot as plt
@@ -620,6 +621,18 @@ class Splat:
             # Store the tile in the cache
             self.tile_cache[tile_name] = tile_data
             return tile_data
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'NoSuchKey':
+                logger.info(f"Tile {tile_name} not found in S3 bucket, trying to download V1 SRTM data instead: {e}")
+                s3_key = f"skadi/{tile_dir_prefix}/{tile_name}"
+                obj = self.s3.get_object(Bucket=self.bucket_name, Key=s3_key)
+                tile_data = obj['Body'].read()
+                # Store the tile in the cache
+                self.tile_cache[tile_name] = tile_data
+                return tile_data
+            else:
+                logger.error(f"Failed to download {tile_name} from S3 due to ClientError: {e}")
+                raise
         except Exception as e:
             logger.error(f"Failed to download {tile_name} from S3: {e}")
             raise
