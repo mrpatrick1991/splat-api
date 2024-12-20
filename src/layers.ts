@@ -6,6 +6,7 @@ const redPinMarker = L.divIcon({
         <li style="color: red; font-size: 30px;">📍</li>
     </ul>`,
     iconSize: [30, 30],
+    iconAnchor: [15, 30],
 });
 
 const chirpyMarker = L.divIcon({
