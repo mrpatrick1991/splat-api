@@ -52,7 +52,7 @@ services:
     image: nginxproxy/acme-companion
     container_name: nginx-proxy-acme
     environment:
-      - DEFAULT_EMAIL=mail@yourdomain.tld
+      - DEFAULT_EMAIL=thebentern@meshtastic.org
     volumes_from:
       - nginx-proxy
     volumes:
