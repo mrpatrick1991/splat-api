@@ -107,11 +107,6 @@ const useStore = defineStore('store', {
 
       L.control.zoom({ position: "bottomleft" }).addTo(this.map as L.Map);
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: "© OpenStreetMap contributors",
-      }).addTo(this.map as L.Map);
-
       const cartoLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '© OpenStreetMap contributors © CARTO',
       });
@@ -127,6 +122,8 @@ const useStore = defineStore('store', {
       const topoLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
         attribution: 'Map data: © OpenStreetMap contributors, SRTM | OpenTopoMap',
       });
+
+      streetLayer.addTo(this.map as L.Map);
 
       // Base Layers
       const baseLayers = {
