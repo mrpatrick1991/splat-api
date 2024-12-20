@@ -107,9 +107,10 @@ const useStore = defineStore('store', {
 
       L.control.zoom({ position: "bottomleft" }).addTo(this.map as L.Map);
 
-      const cartoDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '© OpenStreetMap contributors © CARTO',
-      }).addTo(this.map as L.Map); // Default base layer
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "© OpenStreetMap contributors",
+      }).addTo(this.map as L.Map);
 
       const cartoLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '© OpenStreetMap contributors © CARTO',
@@ -127,12 +128,10 @@ const useStore = defineStore('store', {
         attribution: 'Map data: © OpenStreetMap contributors, SRTM | OpenTopoMap',
       });
 
-
       // Base Layers
       const baseLayers = {
-        "Carto Dark" : cartoDark,
-        "Carto Light": cartoLight,
         "OSM": streetLayer,
+        "Carto Light": cartoLight,
         "Satellite": satelliteLayer,
         "Topo Map": topoLayer
       };
@@ -153,7 +152,6 @@ const useStore = defineStore('store', {
       this.map.on("baselayerchange", () => {
         this.redrawSites(); // Re-apply the GeoRasterLayer on top
       });
-
       this.currentMarker = L.marker(position, { icon: redPinMarker }).addTo(this.map as L.Map).bindPopup("Transmitter site"); // Variable to hold the current marker
       this.redrawSites();
     },
@@ -252,7 +250,7 @@ const useStore = defineStore('store', {
                 taskId,
                 raster: geoRaster
               });
-              this.currentMarker!.bindPopup(this.splatParams.transmitter.name)
+              this.currentMarker!.removeFrom(this.map as L.Map);
               this.splatParams.transmitter.name = await randanimalSync();
               this.redrawSites();
             }

@@ -108,4 +108,11 @@ const buttonText = () => {
   background: transparent;
   border: none !important;
 }
+/* .leaflet-layer,
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out,
+.leaflet-control-attribution {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+} */
+
 </style>
