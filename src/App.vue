@@ -60,9 +60,9 @@
             </li>
             </ul>
             <div class="mt-3 d-flex gap-2">
-              <button @click="store.runSimulation" type="button" class="btn btn-success btn-sm" id="runSimulation">
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
-                <span class="button-text">Run Simulation</span>
+              <button :disabled="store.simulationState === 'running'" @click="store.runSimulation" type="button" class="btn btn-success btn-sm" id="runSimulation">
+                <span :class="{ 'd-none': store.simulationState !== 'running' }" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span class="button-text">{{ buttonText() }}</span>
               </button>
             </div>
             <ul class="list-group mt-3">
@@ -92,8 +92,27 @@ import Display from "./components/Display.vue"
 
 import { useStore } from './store.ts'
 const store = useStore()
+const buttonText = () => {
+  if ('running' === store.simulationState) {
+    return 'Running'
+  } else if ('failed' === store.simulationState) {
+    return 'Failed'
+  } else {
+    return 'Run Simulation'
+  }
+}
 </script>
 
-<style scoped>
+<style>
+.leaflet-div-icon {
+  background: transparent;
+  border: none !important;
+}
+/* .leaflet-layer,
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out,
+.leaflet-control-attribution {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+} */
 
 </style>

@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  proj4-fully-loaded: ^0.2.0
+
 importers:
 
   .:
@@ -1490,11 +1493,8 @@ packages:
     resolution: {integrity: sha512-cdGef/drWFoydD1JsMzuFf8100nZl+GT+yacc2bEced5f9Rjk4z+WtFUTBu9PhOi9j/jfmBPu0mMEY4wIdAF8A==}
     engines: {node: '>= 0.6.0'}
 
-  proj4-fully-loaded@0.0.4:
-    resolution: {integrity: sha512-74v+nA/T6Hcilukd0nFNTNSEf6Up62jzpLssk4Pr6psRWy2nZCdFV90kb4ZjmbbqBqu7V4D8G9C5V54NixBK4g==}
-
-  proj4-fully-loaded@0.1.0:
-    resolution: {integrity: sha512-LfA3KHTqAAT1Nr73+atyEwiwHlWEOFWes71TwVlx1kTX0LpHWLKGGIozLY/sIgthoqq6Pf5n58RukdDyMKdRBw==}
+  proj4-fully-loaded@0.2.0:
+    resolution: {integrity: sha512-9rlkLe9+l8iFpviYiQjdHbw9d3iOmUAF1UlbaVkofvbI26/0/EOWtYku9ln+dJuAovrqHyoJ984G5/edQxvHng==}
 
   proj4-merge@0.1.1:
     resolution: {integrity: sha512-Ac9W5jgOAqPRspA9fMuRuLs0weDuOCHK7nnd6yOAySzLaxrmq1ZxbCTKVt6pIEOPB3RpgcupBOU3KXmQM0m8rg==}
@@ -3083,7 +3083,7 @@ snapshots:
       georaster: 1.6.0(typescript@5.6.3)(webpack@4.47.0)
       leaflet: 1.9.4
       pixel-utils: 0.7.0
-      proj4-fully-loaded: 0.1.0
+      proj4-fully-loaded: 0.2.0
       regenerator-runtime: 0.13.11
       reproject-bbox: 0.4.2
       snap-bbox: 0.2.0
@@ -3665,12 +3665,7 @@ snapshots:
 
   process@0.11.10: {}
 
-  proj4-fully-loaded@0.0.4:
-    dependencies:
-      proj4: 2.15.0
-      proj4js-definitions: 0.1.0
-
-  proj4-fully-loaded@0.1.0:
+  proj4-fully-loaded@0.2.0:
     dependencies:
       proj4: 2.15.0
       proj4js-definitions: 0.1.0
@@ -3786,12 +3781,12 @@ snapshots:
 
   reproject-bbox@0.4.2:
     dependencies:
-      proj4-fully-loaded: 0.1.0
+      proj4-fully-loaded: 0.2.0
       proj4-merge: 0.1.1
 
   reproject-geojson@0.1.2:
     dependencies:
-      proj4-fully-loaded: 0.0.4
+      proj4-fully-loaded: 0.2.0
 
   resolve-url@0.2.1: {}
 

@@ -8,12 +8,17 @@ services:
     environment:
       - HOME=/root
       - TERM=xterm
+      - VIRTUAL_HOST=site.meshtastic.org
+      - VIRTUAL_PORT=8080
+      - LETSENCRYPT_HOST=site.meshtastic.org
+    mem_limit: 12G
     ports:
-      - "8080:8080"
+      - 8080:8080
     depends_on:
       - redis
     working_dir: "/app"
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
+    restart: unless-stopped
     networks:
       - app-network
 
@@ -21,10 +26,51 @@ services:
     image: redis:latest
     container_name: redis
     ports:
-      - "6379:6379"
-    command: ["redis-server"]
+      - 6379:6379
+    command: [redis-server]
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy
+    container_name: nginx-proxy
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      - TRUST_DOWNSTREAM_PROXY=true
+    volumes:
+      # The vhost and conf volumes are only required
+      # if you plan to obtain standalone certificates
+      # - vhost:/etc/nginx/vhost.d
+      # - conf:/etc/nginx/conf.d
+      - html:/usr/share/nginx/html
+      - certs:/etc/nginx/certs:ro
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - app-network
+
+  acme-companion:
+    image: nginxproxy/acme-companion
+    container_name: nginx-proxy-acme
+    environment:
+      - DEFAULT_EMAIL=thebentern@meshtastic.org
+    volumes_from:
+      - nginx-proxy
+    volumes:
+      - certs:/etc/nginx/certs:rw
+      - acme:/etc/acme.sh
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - app-network
 
 networks:
   app-network:
+
+volumes:
+  # vhost:
+  # conf:
+  html:
+  certs:
+  acme:
