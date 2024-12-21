@@ -7,6 +7,7 @@ import subprocess
 import tempfile
 import xml.etree.ElementTree as ET
 from typing import Literal, List, Tuple
+from rasterio.transform import Affine
 
 import boto3
 from botocore import UNSIGNED
@@ -315,6 +316,8 @@ class Splat:
                 sdf_hd_filename = Splat._hgt_filename_to_sdf_filename(tile_name, high_resolution = True)
                 tile_names.append((tile_name, sdf_filename, sdf_hd_filename))
 
+        logger.debug("required tile names are: ")
+        logger.debug(tile_names)
         return tile_names
 
     @staticmethod
@@ -641,7 +644,7 @@ class Splat:
     def _hgt_filename_to_sdf_filename(hgt_filename: str, high_resolution: bool = False) -> str:
             """ helper method to get the expected SPLAT! .sdf filename from the .hgt.gz terrain tile."""
             lat = int(hgt_filename[1:3]) * (1 if hgt_filename[0] == 'N' else -1)
-            lon = int(hgt_filename[4:7]) - 1
+            lon = int(hgt_filename[4:7]) - (-1 if hgt_filename[3] == 'E' else 1) # fix off-by-one error in eastern hemisphere
             lon = 360 - lon if hgt_filename[3] == 'E' else lon
             return f"{lat}:{lat + 1}:{lon}:{lon + 1}{'-hd.sdf' if high_resolution else '.sdf'}"
 
@@ -689,7 +692,8 @@ class Splat:
                         logger.info(f"Downsampling {hgt_path} to 3-arcsecond resolution.")
                         with rasterio.open(hgt_path) as src:
                             # Apply a scaling factor to transform for 3-arcsecond resolution
-                            transform = src.transform * src.transform.scale(3, 3)
+                            scale_factor = 3  # 3-arcsecond is 3 times coarser than 1-arcsecond
+                            transform = src.transform * Affine.scale(scale_factor, scale_factor)
 
                             # Resample data to 3-arcsecond resolution
                             data = src.read(
@@ -725,14 +729,14 @@ class Splat:
                 cmd = self.srtm2sdf_hd_binary if high_resolution else self.srtm2sdf_binary
                 logger.info(f"Converting {hgt_path} to {sdf_filename} using {cmd}.")
                 result = subprocess.run(
-                    [cmd, "-d", "/dev/null", os.path.basename(tile_name.replace(".gz", ""))],
+                    [cmd, os.path.basename(tile_name.replace(".gz", ""))],
                     cwd=tmpdir,
                     capture_output=True,
                     text=True,
                     check=True,
                 )
 
-                logger.debug(f"srtm2sdf output:\n{result.stdout}")
+                logger.debug(f"srtm2sdf output:\n{result.stderr}")
                 sdf_path = os.path.join(tmpdir, sdf_filename)
 
                 # Ensure the .sdf file was created
@@ -764,13 +768,13 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     try:
         splat_service = Splat(
-            splat_path="splat",  # Replace with the actual SPLAT! binary path
+            splat_path="/Users/patrick/Dev/splat",  # Replace with the actual SPLAT! binary path
         )
 
         # Create a test coverage prediction request
         test_coverage_request = CoveragePredictionRequest(
-            lat=51.062,
-            lon=-114.16,
+            lat=-37.8136,
+            lon=144.9631,
             tx_height=5.0,
             ground_dielectric=15.0,
             ground_conductivity=0.005,
