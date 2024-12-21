@@ -142,6 +142,11 @@ class Splat:
                 # FIXME: Eventually support high-resolution terrain data
                 request.high_resolution = False
 
+                # Set hard limit of 100 km radius
+                if request.radius > 100000:
+                    logger.debug(f"User tried to set radius of {request.radius} meters, setting to 100 km.")
+                    request.radius = 100000
+
                 # determine the required terrain tiles
                 required_tiles = Splat._calculate_required_terrain_tiles(request.lat, request.lon, request.radius)
 
