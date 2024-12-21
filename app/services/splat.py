@@ -768,7 +768,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     try:
         splat_service = Splat(
-            splat_path="/Users/patrick/Dev/splat",  # Replace with the actual SPLAT! binary path
+            splat_path="splat",  # Replace with the actual SPLAT! binary path
         )
 
         # Create a test coverage prediction request
